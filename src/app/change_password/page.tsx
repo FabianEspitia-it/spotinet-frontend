@@ -2,6 +2,7 @@
 
 import { Fade } from "react-awesome-reveal";
 import React from "react";
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 import { useState } from "react";
 
@@ -43,6 +44,21 @@ export default function ChangePassword() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center bg-principal_blue h-screen w-full">
+        <div className="text-center">
+          <div className="flex justify-center">
+            <PacmanLoader color="#00ffff" size={40} />
+          </div>
+          <p className="pt-4 font-semibold text-white">
+            Estamos actualizando la contraseña, por favor espera unos segundos
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (
