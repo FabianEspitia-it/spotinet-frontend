@@ -23,7 +23,7 @@ export default function ChangePassword() {
 
     try {
       const response = await fetch(
-        process.env.NEXT_PUBLIC_CHANGE_PASSWORD_URL + "/update_password",
+        process.env.NEXT_PUBLIC_DISNEY + "/update_password",
         {
           method: "PATCH",
           headers: {

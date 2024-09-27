@@ -1,8 +1,61 @@
 "use client";
 
 import { Fade } from "react-awesome-reveal";
+import { useState } from "react";
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 export default function TemporalAccess() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function sendData() {
+    event?.preventDefault();
+
+    setLoading(true);
+
+    const data = {
+      email: email,
+    };
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_NETFLIX}/temporal_access/${data.email}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data);
+      } else {
+        console.log("Error en la petición");
+      }
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center bg-principal_blue h-screen w-full">
+        <div className="text-center">
+          <div className="flex justify-center">
+            <PacmanLoader color="#00ffff" size={40} />
+          </div>
+          <p className="pt-4 font-semibold text-white">
+            Estamos trayendo el código, por favor espera unos segundos
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-principal_blue">
@@ -14,12 +67,14 @@ export default function TemporalAccess() {
             Por favor digita el correo electrónico de la cuenta
           </p>
 
-          <form className="space-y-4" action="">
+          <form className="space-y-4" action="" onSubmit={sendData}>
             <input
               className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
               type="email"
               placeholder="spotinet@spotinet.com"
               required
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
             />
 
             <button
