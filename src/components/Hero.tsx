@@ -15,7 +15,11 @@ export default function Hero() {
           <h1 className="text-6xl md:text-7xl md:mb-4 font-extrabold text-secondary_blue">
             Spotinet
           </h1>
-          <section className="flex justify-center flex-col md:flex-row md:space-x-12 space-y-11 md:space-y-0 mt-24">
+
+          <p className="text-xl text-white mt-10">
+            Por favor selecciona la opción del servicio que deseas utilizar
+          </p>
+          <section className="flex flex-col items-center md:flex-row md:space-x-12 space-y-11 md:space-y-0 mt-14">
             {links.map((link, index) => (
               <a
                 key={link.id}
