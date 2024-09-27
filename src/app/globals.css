@@ -24,4 +24,12 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+
+  .bg-netflix {
+    background-image: url('/images/netflix_logo.jpg');
+  }
+
+  .bg-disney {
+    background-image: url('/images/disney_logo.jpeg');
+  }
 }
