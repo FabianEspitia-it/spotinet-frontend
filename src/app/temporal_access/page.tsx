@@ -7,6 +7,7 @@ import PacmanLoader from "react-spinners/PacmanLoader";
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState("");
 
   async function sendData() {
     event?.preventDefault();
@@ -30,6 +31,7 @@ export default function TemporalAccess() {
 
       if (response.ok) {
         const data = await response.json();
+        setResponseMessage(`Código de acceso temporal: ${data.code}`);
         console.log(data);
       } else {
         console.log("Error en la petición");
@@ -66,6 +68,10 @@ export default function TemporalAccess() {
           <p className="text-white text-xl md:mb-6 mb-5">
             Por favor digita el correo electrónico de la cuenta
           </p>
+
+          {responseMessage && (
+            <p className="text-white text-xl mb-5">{responseMessage}</p>
+          )}
 
           <form className="space-y-4" action="" onSubmit={sendData}>
             <input

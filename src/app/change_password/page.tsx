@@ -76,7 +76,7 @@ export default function ChangePassword() {
           </p>
 
           {answerok && (
-            <p className="text-white text-xl my-4">Contraseña actualizada</p>
+            <p className="text-white text-xl my-4">Contraseña actualizada :D</p>
           )}
 
           <form className="space-y-4" onSubmit={sendData}>
