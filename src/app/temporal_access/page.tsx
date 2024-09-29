@@ -60,10 +60,10 @@ export default function TemporalAccess() {
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-principal_blue">
         <div className="text-center bg-principal_blue px-8 rounded-lg shadow-lg max-w-lg w-full">
-          <h1 className="text-6xl md:text-7xl md:mb-10 font-extrabold text-secondary_blue">
+          <h1 className="text-6xl md:text-7xl md:mb-10 mb-5 font-extrabold text-secondary_blue">
             Spotinet
           </h1>
-          <p className="text-white text-xl md:mb-6">
+          <p className="text-white text-xl md:mb-6 mb-5">
             Por favor digita el correo electrónico de la cuenta
           </p>
 

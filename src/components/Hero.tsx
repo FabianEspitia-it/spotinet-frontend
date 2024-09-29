@@ -4,6 +4,11 @@ export default function Hero() {
   const links = [
     { label: "Actualiza Hogar", href: "/update_home", id: 1 },
     { label: "Código acceso temporal", href: "/temporal_access", id: 2 },
+    {
+      label: "Código de inicio de sesión",
+      href: "/session_netflix_code",
+      id: 5,
+    },
     { label: "Código inicio de sesión", href: "/session_code", id: 3 },
     { label: "Cambio de contraseña", href: "/change_password", id: 4 },
   ];
@@ -17,7 +22,7 @@ export default function Hero() {
           </h1>
 
           <p className="text-xl text-white mt-10">
-            Por favor selecciona la opción del servicio que deseas utilizar
+            Por favor selecciona el servicio que deseas utilizar
           </p>
           <section className="flex flex-col items-center md:flex-row md:space-x-12 space-y-11 md:space-y-0 mt-14">
             {links.map((link, index) => (
@@ -26,7 +31,7 @@ export default function Hero() {
                 href={link.href}
                 className={`rounded-lg text-white w-48 h-48 flex items-center justify-center shadow-md hover:shadow-lg
                 ${
-                  index < 2
+                  index < 3
                     ? "bg-netflix bg-cover bg-center bg-no-repeat"
                     : "bg-disney bg-cover bg-center bg-no-repeat"
                 }

@@ -10,6 +10,7 @@ export default function ChangePassword() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [answerok, setAnswerok] = useState(false);
 
   async function sendData() {
     event?.preventDefault();
@@ -35,6 +36,7 @@ export default function ChangePassword() {
 
       if (response.ok) {
         const data = await response.json();
+        setAnswerok(true);
         console.log(data);
       } else {
         console.log("Error en la petición");
@@ -65,13 +67,17 @@ export default function ChangePassword() {
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-principal_blue">
         <div className="text-center bg-principal_blue p-8 rounded-lg shadow-lg max-w-lg w-full">
-          <h1 className="text-6xl md:text-7xl md:mb-10 font-extrabold text-secondary_blue">
+          <h1 className="text-6xl md:text-7xl md:mb-10 mb-5 font-extrabold text-secondary_blue">
             Spotinet
           </h1>
-          <p className="text-white text-xl md:mb-6">
+          <p className="text-white text-xl md:mb-6 mb-5">
             Por favor digita el correo electrónico de la cuenta y la nueva
             contraseña
           </p>
+
+          {answerok && (
+            <p className="text-white text-xl my-4">Contraseña actualizada</p>
+          )}
 
           <form className="space-y-4" onSubmit={sendData}>
             <input

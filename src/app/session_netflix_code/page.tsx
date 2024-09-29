@@ -4,7 +4,7 @@ import { Fade } from "react-awesome-reveal";
 import { useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 
-export default function SessionCode() {
+export default function SessionNetflixCode() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
@@ -20,7 +20,7 @@ export default function SessionCode() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_DISNEY}/session_code/${data.email}`,
+        `${process.env.NEXT_PUBLIC_NETFLIX}/session_code/${data.email}`,
         {
           method: "GET",
           headers: {
