@@ -1,16 +1,17 @@
 "use client";
 
 import { Fade } from "react-awesome-reveal";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
+import { toast } from "react-toastify";
 
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
-  async function sendData() {
-    event?.preventDefault();
+  async function sendData(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
     setLoading(true);
 
@@ -34,6 +35,8 @@ export default function TemporalAccess() {
         setResponseMessage(`Código de acceso temporal: ${data.code}`);
         console.log(data);
       } else {
+        toast.error("Algo salio mal, por favor verifica el correo");
+
         console.log("Error en la petición");
       }
     } catch (error) {

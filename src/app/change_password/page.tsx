@@ -1,19 +1,19 @@
 "use client";
 
 import { Fade } from "react-awesome-reveal";
-import React from "react";
+import React, { FormEvent } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export default function ChangePassword() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [answerok, setAnswerok] = useState(false);
 
-  async function sendData() {
-    event?.preventDefault();
+  async function sendData(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
     setLoading(true);
 
@@ -36,10 +36,11 @@ export default function ChangePassword() {
 
       if (response.ok) {
         const data = await response.json();
-        setAnswerok(true);
+        toast.success("Contraseña actualizada correctamente :D");
         console.log(data);
       } else {
         console.log("Error en la petición");
+        toast.error("Algo salio mal, por favor verifica el correo");
       }
     } catch (error) {
       console.log(error);
@@ -74,10 +75,6 @@ export default function ChangePassword() {
             Por favor digita el correo electrónico de la cuenta y la nueva
             contraseña
           </p>
-
-          {answerok && (
-            <p className="text-white text-xl my-4">Contraseña actualizada :D</p>
-          )}
 
           <form className="space-y-4" onSubmit={sendData}>
             <input

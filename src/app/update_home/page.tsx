@@ -1,16 +1,17 @@
 "use client";
 
 import { Fade } from "react-awesome-reveal";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
+
+import { toast } from "react-toastify";
 
 export default function UpdateHome() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [responseOk, setResponseOk] = useState(false);
 
-  async function sendData() {
-    event?.preventDefault();
+  async function sendData(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
     setLoading(true);
 
@@ -31,10 +32,10 @@ export default function UpdateHome() {
 
       if (response.ok) {
         const data = await response.json();
-        setResponseOk(true);
+        toast.success("Hogar actualizado correctamente :D");
         console.log(data);
       } else {
-        console.log("Error en la petición");
+        toast.error("Algo salio mal, por favor verifica el correo");
       }
     } catch (error) {
       console.log(error);
@@ -68,12 +69,6 @@ export default function UpdateHome() {
           <p className="text-white text-xl md:mb-6 mb-5 ">
             Por favor digita el correo electrónico de la cuenta
           </p>
-
-          {responseOk && (
-            <p className="text-white text-xl mb-5">
-              Proceso hogar realizado :D
-            </p>
-          )}
 
           <form className="space-y-4" action="" onSubmit={sendData}>
             <input
