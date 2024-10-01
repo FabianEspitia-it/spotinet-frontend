@@ -57,7 +57,8 @@ export default function ChangePassword() {
             <PacmanLoader color="#00ffff" size={40} />
           </div>
           <p className="pt-4 font-semibold text-white">
-            Estamos actualizando la contraseña, por favor espera unos segundos
+            Estamos actualizando la contraseña, el proceso tarda alrededor de 1
+            minuto y 20 segundos
           </p>
         </div>
       </div>
