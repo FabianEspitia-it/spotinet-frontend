@@ -8,7 +8,7 @@ import { toast } from "react-toastify";
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
 
   async function sendData(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,7 +32,8 @@ export default function TemporalAccess() {
 
       if (response.ok) {
         const data = await response.json();
-        setResponseMessage(`Código de acceso temporal: ${data.code}`);
+        setResponseMessage(data.link);
+
         console.log(data);
       } else {
         toast.error("Algo salio mal, por favor verifica el correo");
@@ -54,7 +55,7 @@ export default function TemporalAccess() {
             <PacmanLoader color="#00ffff" size={40} />
           </div>
           <p className="pt-4 font-semibold text-white">
-            Estamos trayendo el código, por favor espera unos segundos
+            Estamos trayendo el link del código, por favor espera unos segundos
           </p>
         </div>
       </div>
@@ -73,7 +74,17 @@ export default function TemporalAccess() {
           </p>
 
           {responseMessage && (
-            <p className="text-white text-xl mb-5">{responseMessage}</p>
+            <p className="text-white text-xl mb-5">
+              Este es el link para obtener el código:
+              <a
+                className="text-secondary_blue underline block"
+                rel="noopener noreferrer"
+                target="_blank"
+                href={responseMessage}
+              >
+                Spotilink
+              </a>
+            </p>
           )}
 
           <form className="space-y-4" action="" onSubmit={sendData}>

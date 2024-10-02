@@ -10,7 +10,7 @@ export default function Hero() {
       id: 5,
     },
     { label: "Código inicio de sesión", href: "/session_code", id: 3 },
-    { label: "Cambio de contraseña", href: "/change_password", id: 4 },
+    // { label: "Cambio de contraseña", href: "/change_password", id: 4 },
   ];
 
   return (

@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 export default function UpdateHome() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
 
   async function sendData(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,7 +33,7 @@ export default function UpdateHome() {
 
       if (response.ok) {
         const data = await response.json();
-        toast.success("Hogar actualizado correctamente :D");
+        setResponseMessage(data.link);
         console.log(data);
       } else {
         toast.error("Algo salio mal, por favor verifica el correo");
@@ -52,7 +53,8 @@ export default function UpdateHome() {
             <PacmanLoader color="#00ffff" size={40} />
           </div>
           <p className="pt-4 font-semibold text-white">
-            Estamos realizando el proceso, por favor espera unos segundos
+            Estamos trayendo el link para actualizar hogar, por favor espera
+            unos segundos
           </p>
         </div>
       </div>
@@ -69,6 +71,21 @@ export default function UpdateHome() {
           <p className="text-white text-xl md:mb-6 mb-5 ">
             Por favor digita el correo electrónico de la cuenta
           </p>
+
+          {responseMessage && (
+            <p className="text-white text-xl mb-5">
+              {" "}
+              Este es el link para actualizar el hogar:
+              <a
+                className="text-secondary_blue block underline"
+                rel="noreferrer"
+                target="_blank"
+                href={responseMessage}
+              >
+                Spotilink
+              </a>
+            </p>
+          )}
 
           <form className="space-y-4" action="" onSubmit={sendData}>
             <input
