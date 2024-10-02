@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "react-toastify/dist/ReactToastify.css";
 
 const poppins = Poppins({
@@ -27,6 +28,8 @@ export default async function RootLayout({
 
         {children}
       </body>
+
+      <GoogleAnalytics gaId="G-KMP3PXYE98" />
     </html>
   );
 }
