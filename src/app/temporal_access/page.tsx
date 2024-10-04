@@ -33,6 +33,7 @@ export default function TemporalAccess() {
       if (response.ok) {
         const data = await response.json();
         setResponseMessage(data.link);
+        toast.success("Gracias por preferirnos :D");
 
         console.log(data);
       } else {

@@ -34,6 +34,7 @@ export default function SessionNetflixCode() {
       if (response.ok) {
         const data = await response.json();
         setResponseMessage(`Código de sesión: ${data.code}`);
+        toast.success("Gracias por preferirnos :D");
       } else {
         toast.error("Algo salio mal, por favor verifica el correo");
       }

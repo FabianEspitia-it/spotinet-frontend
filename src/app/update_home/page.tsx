@@ -34,7 +34,7 @@ export default function UpdateHome() {
       if (response.ok) {
         const data = await response.json();
         setResponseMessage(data.link);
-        console.log(data);
+        toast.success("Gracias por preferirnos :D");
       } else {
         toast.error("Algo salio mal, por favor verifica el correo");
       }

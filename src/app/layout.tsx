@@ -28,7 +28,6 @@ export default async function RootLayout({
 
         {children}
       </body>
-
       <GoogleAnalytics gaId="G-KMP3PXYE98" />
     </html>
   );
