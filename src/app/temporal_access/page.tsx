@@ -66,7 +66,7 @@ export default function TemporalAccess() {
   return (
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-principal_blue">
-        <div className="text-center bg-principal_blue px-8 rounded-lg shadow-lg max-w-lg w-full">
+        <div className="text-center bg-principal_blue px-8 max-w-lg w-full">
           <h1 className="text-6xl md:text-7xl md:mb-10 mb-5 font-extrabold text-secondary_blue">
             Spotinet
           </h1>
