@@ -41,7 +41,7 @@ export default function SessionNetflixCode() {
         toast.success("Gracias por preferirnos :D");
       } else {
         toast.error(
-          "Algo salio mal, por favor verifica el correo o la contraseña"
+          "Algo salio mal, por favor verifica el correo y la contraseña"
         );
       }
     } catch (error) {
@@ -74,7 +74,8 @@ export default function SessionNetflixCode() {
             Spotinet
           </h1>
           <p className="text-white text-xl md:mb-6 mb-5">
-            Por favor digita el correo electrónico de la cuenta
+            Por favor digita el correo electrónico de la cuenta y la contraseña
+            spotinet
           </p>
 
           {responseMessage && (
@@ -94,7 +95,7 @@ export default function SessionNetflixCode() {
             <input
               type="password"
               className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
-              placeholder="spotipassword"
+              placeholder="spotiseña"
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
