@@ -22,7 +22,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html className="bg-principal_blue">
+    <html lang="es" className="bg-principal_blue">
       <body className={poppins.className}>
         <ToastContainer />
 
