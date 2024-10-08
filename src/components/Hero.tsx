@@ -9,7 +9,7 @@ export default function Hero() {
       href: "/session_netflix_code",
       id: 5,
     },
-    { label: "Código inicio de sesión", href: "/session_code", id: 3 },
+    { label: "Código de inicio de sesión", href: "/session_code", id: 3 },
     // { label: "Cambio de contraseña", href: "/change_password", id: 4 },
   ];
 
