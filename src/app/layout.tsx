@@ -13,7 +13,7 @@ const poppins = Poppins({
 
 export const metadata: Metadata = {
   title: "Spotinet",
-  description: "somos lo mejor",
+  description: "Tu servicio de streaming favorito",
 };
 
 export default async function RootLayout({
