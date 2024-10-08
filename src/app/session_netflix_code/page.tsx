@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function SessionNetflixCode() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
   async function sendData(e: FormEvent<HTMLFormElement>) {
@@ -18,16 +19,19 @@ export default function SessionNetflixCode() {
 
     const data = {
       email: email,
+      password: password,
     };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_NETFLIX}/session_code/${data.email}`,
+        `${process.env.NEXT_PUBLIC_NETFLIX}/session_code/`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+
+          body: JSON.stringify(data),
         }
       );
 
@@ -36,7 +40,9 @@ export default function SessionNetflixCode() {
         setResponseMessage(`Código de sesión: ${data.code}`);
         toast.success("Gracias por preferirnos :D");
       } else {
-        toast.error("Algo salio mal, por favor verifica el correo");
+        toast.error(
+          "Algo salio mal, por favor verifica el correo o la contraseña"
+        );
       }
     } catch (error) {
       console.log(error);
@@ -83,6 +89,15 @@ export default function SessionNetflixCode() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+            />
+
+            <input
+              type="password"
+              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
+              placeholder="spotipassword"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
 
             <button

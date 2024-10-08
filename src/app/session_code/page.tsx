@@ -7,6 +7,7 @@ import { toast } from "react-toastify";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
   async function sendData(e: FormEvent<HTMLFormElement>) {
@@ -17,16 +18,19 @@ export default function SessionCode() {
 
     const data = {
       email: email,
+      password: password,
     };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_DISNEY}/session_code/${data.email}`,
+        `${process.env.NEXT_PUBLIC_DISNEY}/session_code/`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+
+          body: JSON.stringify(data),
         }
       );
 
@@ -35,7 +39,9 @@ export default function SessionCode() {
         setResponseMessage(`Código de sesión: ${data.code}`);
         toast.success("Gracias por preferirnos :D");
       } else {
-        toast.error("Algo salio mal, por favor verifica el correo");
+        toast.error(
+          "Algo salio mal, por favor verifica el correo o la contraseña"
+        );
       }
     } catch (error) {
       console.log(error);
@@ -67,7 +73,7 @@ export default function SessionCode() {
             Spotinet
           </h1>
           <p className="text-white text-xl md:mb-6 mb-5">
-            Por favor digita el correo electrónico de la cuenta
+            Por favor digita el correo electrónico de la cuenta y la contraseña
           </p>
 
           {responseMessage && (
@@ -82,6 +88,15 @@ export default function SessionCode() {
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
+            />
+
+            <input
+              type="password"
+              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
+              placeholder="spotipassword"
+              required
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
 
             <button
