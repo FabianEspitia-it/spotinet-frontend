@@ -95,7 +95,7 @@ export default function SessionNetflixCode() {
             <input
               type="password"
               className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
-              placeholder="spotiseña"
+              placeholder="contraseña"
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
