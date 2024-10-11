@@ -3,7 +3,7 @@ import { Fade } from "react-awesome-reveal";
 export default function Hero() {
   const links = [
     { label: "Actualiza Hogar", href: "/update_home", id: 1 },
-    { label: "Código acceso temporal", href: "/temporal_access", id: 2 },
+    { label: "Código de acceso temporal", href: "/temporal_access", id: 2 },
     {
       label: "Código de inicio de sesión",
       href: "/session_netflix_code",
