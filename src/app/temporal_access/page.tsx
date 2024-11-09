@@ -1,6 +1,7 @@
 "use client";
 
 import { Fade } from "react-awesome-reveal";
+import Image from "next/image";
 import { FormEvent, useState } from "react";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import { toast } from "react-toastify";
@@ -67,9 +68,13 @@ export default function TemporalAccess() {
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-principal_blue">
         <div className="text-center bg-principal_blue px-8 max-w-lg w-full">
-          <h1 className="text-6xl md:text-7xl md:mb-10 mb-5 font-extrabold text-secondary_blue">
-            Spotinet
-          </h1>
+          <Image
+            src="/images/spotinet_logo_two.png"
+            alt="Spotinet Logo"
+            width={320}
+            height={320}
+            className="mx-auto mb-5"
+          />
           <p className="text-white text-xl md:mb-6 mb-5">
             Por favor digita el correo electrónico de la cuenta
           </p>

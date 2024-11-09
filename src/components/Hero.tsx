@@ -1,4 +1,5 @@
 import { Fade } from "react-awesome-reveal";
+import Image from "next/image";
 
 export default function Hero() {
   const links = [
@@ -14,17 +15,21 @@ export default function Hero() {
   ];
 
   return (
-    <section className="relative flex items-center pt-16 pb-20">
+    <section className="relative flex items-center pt-10 pb-20">
       <div className="mx-auto text-center">
         <Fade triggerOnce>
-          <h1 className="text-6xl md:text-7xl md:mb-4 font-extrabold text-secondary_blue">
-            Spotinet
-          </h1>
+          <Image
+            src="/images/spotinet_logo_two.png"
+            alt="Spotinet Logo"
+            width={320}
+            height={320}
+            className="mx-auto"
+          />
 
-          <p className="text-xl text-white mt-10">
+          <p className="text-xl text-white mt-7">
             Por favor selecciona el servicio que deseas utilizar
           </p>
-          <section className="flex flex-col items-center md:flex-row md:space-x-12 space-y-11 md:space-y-0 mt-14">
+          <section className="flex flex-col items-center md:flex-row md:space-x-12 space-y-11 md:space-y-0 mt-9">
             {links.map((link, index) => (
               <a
                 key={link.id}
