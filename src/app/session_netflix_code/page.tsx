@@ -70,7 +70,7 @@ export default function SessionNetflixCode() {
   return (
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-principal_blue">
-        <div className="text-center bg-principal_blue px-8 max-w-lg w-full">
+        <div className="text-center bg-principal_blue px-8 pb-10 pt-4  max-w-lg w-full">
           <Image
             src="/images/spotinet_logo_two.png"
             alt="Spotinet Logo"
