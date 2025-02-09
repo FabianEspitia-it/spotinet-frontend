@@ -69,7 +69,7 @@ export default function TemporalAccess() {
   return (
     <Fade triggerOnce cascade>
       <section className="flex items-center justify-center h-screen bg-hero-pattern bg-cover bg-center">
-        <a href="/" className="absolute top-7 left-14">
+        <a href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
           <Image
             src="/images/logo_spotinet.png"
             alt="Regresar al menú"
