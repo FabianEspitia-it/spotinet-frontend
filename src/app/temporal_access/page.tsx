@@ -6,6 +6,8 @@ import { FormEvent, useState } from "react";
 import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 
+// Comment
+
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
