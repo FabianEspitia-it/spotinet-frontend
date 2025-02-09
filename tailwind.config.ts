@@ -8,6 +8,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+
+      backgroundImage: {
+        'hero-pattern': "url('/images/fondo_spotinet.jpg')",
+        },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",

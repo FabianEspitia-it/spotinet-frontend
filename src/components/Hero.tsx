@@ -3,44 +3,49 @@ import Image from "next/image";
 
 export default function Hero() {
   const links = [
-    { label: "Actualiza Hogar", href: "/update_home", id: 1 },
-    { label: "Código acceso temporal", href: "/temporal_access", id: 2 },
+    { label: "Actualizar Hogar", href: "/update_home", id: 1 },
+    { label: "Estoy de viaje", href: "/temporal_access", id: 2 },
     {
       label: "Código de inicio de sesión",
       href: "/session_netflix_code",
       id: 5,
     },
     { label: "Código de inicio de sesión", href: "/session_code", id: 3 },
-    // { label: "Cambio de contraseña", href: "/change_password", id: 4 },
   ];
 
   return (
     <section className="relative flex items-center pt-10 pb-20">
-      <div className="mx-auto text-center">
+      <div className="mx-auto text-center pt-10">
         <Fade triggerOnce>
           <Image
-            src="/images/spotinet_logo_two.png"
+            src="/images/final_logo.png"
             alt="Spotinet Logo"
-            width={320}
-            height={320}
+            width={330}
+            height={330}
             className="mx-auto"
           />
 
-          <p className="text-xl text-white mt-7">
-            Por favor selecciona el servicio que deseas utilizar
+          <p className="text-lg text-white mt-10">
+            Por favor selecciona el servicio que deseas utilizar:
           </p>
-          <section className="flex flex-col items-center md:flex-row md:space-x-12 space-y-11 md:space-y-0 mt-9">
+          <section className="flex flex-col items-center md:flex-row md:space-x-0 space-y-0 md:space-y-0 mt-3">
             {links.map((link, index) => (
               <a
                 key={link.id}
                 href={link.href}
-                className={`rounded-lg text-white w-48 h-48 flex items-center justify-center shadow-md hover:shadow-lg
+                className={`text-white w-40 h-40 flex items-center justify-center shadow-md hover:shadow-lg
                 ${
                   index < 3
                     ? "bg-netflix bg-cover bg-center bg-no-repeat"
                     : "bg-disney bg-cover bg-center bg-no-repeat"
                 }
-                border-2 border-gray-400 hover:border-secondary_blue duration-200 transition-all
+                border-2 border-secondary_blue duration-200 transition-all
+                ${index === 0 ? "rounded-tl-2xl rounded-bl-2xl" : ""} 
+                ${
+                  index === links.length - 1
+                    ? "rounded-br-2xl rounded-tr-2xl"
+                    : ""
+                }
               `}
                 aria-label={link.label}
               >

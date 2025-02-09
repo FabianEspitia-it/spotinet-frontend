@@ -2,7 +2,7 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
-import PacmanLoader from "react-spinners/PacmanLoader";
+import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import "react-toastify/dist/ReactToastify.css";
@@ -57,7 +57,7 @@ export default function SessionNetflixCode() {
       <div className="flex justify-center items-center bg-principal_blue h-screen w-full">
         <div className="text-center">
           <div className="flex justify-center">
-            <PacmanLoader color="#00ffff" size={40} />
+            <Loader />
           </div>
           <p className="pt-4 font-semibold text-white">
             Estamos trayendo el código, por favor espera unos segundos
@@ -69,27 +69,38 @@ export default function SessionNetflixCode() {
 
   return (
     <Fade triggerOnce cascade>
-      <section className="flex items-center justify-center h-screen bg-principal_blue">
-        <div className="text-center bg-principal_blue px-8 pb-10 pt-4  max-w-lg w-full">
+      <section className="flex items-center justify-center h-screen bg-hero-pattern bg-cover bg-center relative">
+        <a href="/" className="absolute top-7 left-14">
           <Image
-            src="/images/spotinet_logo_two.png"
-            alt="Spotinet Logo"
-            width={320}
-            height={320}
-            className="mx-auto mb-5"
+            src="/images/logo_spotinet.png"
+            alt="Regresar al menú"
+            width={60}
+            height={60}
+            className="w-10 h-10 md:w-14 md:h-14 cursor-pointer"
           />
-          <p className="text-white text-xl md:mb-6 mb-5">
+        </a>
+
+        <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
+          <h2 className="text-secondary_blue text-2xl font-bold text-center mb-4">
+            N Código de inicio de sesión
+          </h2>
+
+          <hr />
+
+          <p className="text-white text-md md:mb-6 mb-5 mt-5">
             Por favor digita el correo electrónico de la cuenta y la contraseña
-            spotinet
+            spotinet:
           </p>
 
           {responseMessage && (
-            <p className="text-white text-xl my-4">{responseMessage}</p>
+            <p className="text-secondary_blue text-md my-4">
+              {responseMessage}
+            </p>
           )}
 
-          <form className="space-y-4" action="" onSubmit={sendData}>
+          <form className="space-y-4" onSubmit={sendData}>
             <input
-              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
+              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
               type="email"
               placeholder="spotinet@spotinet.com"
               required
@@ -99,26 +110,19 @@ export default function SessionNetflixCode() {
 
             <input
               type="password"
-              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full"
-              placeholder="contraseña"
+              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
+              placeholder="Contraseña"
               required
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
 
             <button
-              className="bg-secondary_blue text-white rounded-lg px-6 py-2 font-semibold hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
+              className="bg-secondary_blue text-white rounded-xl px-6 py-2 font-semibold hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
               type="submit"
             >
               Enviar
             </button>
-
-            <a
-              href="/"
-              className="block bg-secondary_blue text-white rounded-lg px-6 py-2 font-semibold text-center hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
-            >
-              Inicio
-            </a>
           </form>
         </div>
       </section>
