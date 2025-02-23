@@ -13,8 +13,6 @@ export default function Hero() {
     { label: "Código de inicio de sesión", href: "/session_code", id: 3 },
   ];
 
-  // Add comment to deploy
-
   return (
     <section className="relative flex items-center pt-10 pb-20">
       <div className="mx-auto text-center pt-10">
