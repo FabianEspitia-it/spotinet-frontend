@@ -10,7 +10,7 @@ const config: Config = {
     extend: {
 
       backgroundImage: {
-        'hero-pattern': "url('/images/fondo_spotinet-min.jpg')",
+        'hero-pattern': "url('/images/fondo_spotinet-min.webp')",
         },
       colors: {
         background: "var(--background)",

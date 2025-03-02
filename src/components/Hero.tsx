@@ -10,6 +10,11 @@ export default function Hero() {
       href: "/session_netflix_code",
       id: 5,
     },
+    {
+      label: "Restablecimiento de contraseña",
+      href: "/password_reset",
+      id: 4,
+    },
     { label: "Código de inicio de sesión", href: "/session_code", id: 3 },
   ];
 
@@ -35,23 +40,19 @@ export default function Hero() {
               <a
                 key={link.id}
                 href={link.href}
-                className={`text-white w-40 h-40 flex items-center justify-center shadow-md hover:shadow-lg
-                ${
-                  index < 3
-                    ? "bg-netflix bg-cover bg-center bg-no-repeat"
-                    : "bg-disney bg-cover bg-center bg-no-repeat"
-                }
-                border-2 border-secondary_blue duration-200 transition-all
-                ${index === 0 ? "rounded-tl-2xl rounded-bl-2xl" : ""} 
-                ${
-                  index === links.length - 1
-                    ? "rounded-br-2xl rounded-tr-2xl"
-                    : ""
-                }
-              `}
+                className={`text-white w-44 h-44 flex items-center justify-center shadow-md hover:shadow-lg
+      ${
+        index <= 3
+          ? "bg-netflix bg-cover bg-center bg-no-repeat"
+          : "bg-disney bg-cover bg-center bg-no-repeat"
+      }
+      border-2 border-secondary_blue duration-200 transition-all
+      ${index === 0 ? "rounded-tl-2xl rounded-bl-2xl" : ""} 
+      ${index === links.length - 1 ? "rounded-br-2xl rounded-tr-2xl" : ""}
+    `}
                 aria-label={link.label}
               >
-                <span className="bg-black bg-opacity-50 px-4 py-2 rounded text-lg font-semibold tracking-wide">
+                <span className="bg-black bg-opacity-50 px-2 py-1 rounded text-md font-semibold tracking-wide text-center flex flex-wrap justify-center">
                   {link.label}
                 </span>
               </a>
