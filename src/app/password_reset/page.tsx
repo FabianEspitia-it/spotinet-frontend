@@ -11,6 +11,7 @@ export default function SessionCode() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
+
   async function sendData(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -30,7 +31,6 @@ export default function SessionCode() {
           headers: {
             "Content-Type": "application/json",
           },
-
           body: JSON.stringify(data),
         }
       );
@@ -69,74 +69,89 @@ export default function SessionCode() {
 
   return (
     <Fade triggerOnce cascade>
-      <section className="flex items-center justify-center h-screen bg-hero-pattern bg-cover bg-center relative">
-        <a href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
-          <Image
-            src="/images/logo_spotinet.png"
-            alt="Regresar al menú"
-            width={60}
-            height={60}
-            className="w-10 h-10 md:w-14 md:h-14 cursor-pointer"
-          />
-        </a>
+      <div className="relative min-h-screen">
+        {/* Imagen de fondo */}
+        <Image
+          src="/images/fondo_spotinet-min.webp"
+          alt="Background"
+          layout="fill"
+          objectFit="cover"
+          quality={100}
+          className="z-0"
+        />
+        {/* Capa oscura superpuesta */}
+        <div className="absolute inset-0 bg-black opacity-50"></div>
 
-        <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
-          <div className="flex justify-center mb-4 gap-x-3">
-            <Image src="/images/Net.png" alt="Net" width={32} height={10} />
-            <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4 ">
-              Restablecimiento de contraseña
-            </h2>
-          </div>
+        {/* Contenido principal */}
+        <section className="relative z-10 flex items-center justify-center h-screen">
+          <a href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
+            <Image
+              src="/images/logo_spotinet.png"
+              alt="Regresar al menú"
+              width={60}
+              height={60}
+              className="w-10 h-10 md:w-14 md:h-14 cursor-pointer"
+            />
+          </a>
 
-          <hr />
+          <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
+            <div className="flex justify-center mb-4 gap-x-3">
+              <Image src="/images/Net.png" alt="Net" width={32} height={10} />
+              <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
+                Restablecimiento de contraseña
+              </h2>
+            </div>
 
-          <p className="text-white text-md md:mb-6 mb-5 mt-5">
-            Por favor digita el correo electrónico de la cuenta y la contraseña
-            spotinet:
-          </p>
+            <hr />
 
-          {responseMessage && (
-            <p className="text-white text-center text-md mb-4">
-              Haz click en el enlace para restablecer la contraseña:{" "}
-              <a
-                className="text-secondary_blue underline"
-                rel="noreferrer"
-                target="_blank"
-                href={responseMessage}
-              >
-                Spotilink
-              </a>
+            <p className="text-white text-md md:mb-6 mb-5 mt-5">
+              Por favor digita el correo electrónico de la cuenta y la
+              contraseña spotinet:
             </p>
-          )}
 
-          <form className="space-y-4" onSubmit={sendData}>
-            <input
-              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
-              type="email"
-              placeholder="spotinet@spotinet.com"
-              required
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
+            {responseMessage && (
+              <p className="text-white text-center text-md mb-4">
+                Haz click en el enlace para restablecer la contraseña:{" "}
+                <a
+                  className="text-secondary_blue underline"
+                  rel="noreferrer"
+                  target="_blank"
+                  href={responseMessage}
+                >
+                  Spotilink
+                </a>
+              </p>
+            )}
 
-            <input
-              type="password"
-              className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
-              placeholder="Contraseña"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
+            <form className="space-y-4" onSubmit={sendData}>
+              <input
+                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
+                type="email"
+                placeholder="spotinet@spotinet.com"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
 
-            <button
-              className="bg-secondary_blue text-white rounded-xl px-6 py-2 font-semibold hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
-              type="submit"
-            >
-              Enviar
-            </button>
-          </form>
-        </div>
-      </section>
+              <input
+                type="password"
+                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
+                placeholder="Contraseña"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
+
+              <button
+                className="bg-secondary_blue text-white rounded-xl px-6 py-2 font-semibold hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
+                type="submit"
+              >
+                Enviar
+              </button>
+            </form>
+          </div>
+        </section>
+      </div>
     </Fade>
   );
 }
