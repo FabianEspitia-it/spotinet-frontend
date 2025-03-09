@@ -50,9 +50,9 @@ export default function Hero() {
       bg-principal_blue shadow-md hover:bg-secondary_blue hover:text-principal_blue duration-200 transition-all 
       ${
         index === 0
-          ? "md:rounded-l-xl rounded-t-xl"
+          ? "md:rounded-l-xl md:rounded-r-none rounded-t-xl"
           : index === links.length - 1
-          ? "md:rounded-r-xl rounded-b-xl"
+          ? "md:rounded-r-xl md:rounded-l-none  rounded-b-xl"
           : ""
       }`}
                 aria-label={link.label}
