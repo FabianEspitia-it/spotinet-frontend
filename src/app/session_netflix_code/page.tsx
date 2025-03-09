@@ -70,7 +70,6 @@ export default function SessionNetflixCode() {
   return (
     <Fade triggerOnce cascade>
       <div className="relative min-h-screen">
-        {/* Imagen de fondo */}
         <Image
           src="/images/fondo_spotinet-min.webp"
           alt="Background"
@@ -79,10 +78,9 @@ export default function SessionNetflixCode() {
           quality={100}
           className="z-0"
         />
-        {/* Capa oscura superpuesta */}
+
         <div className="absolute inset-0 bg-black opacity-50"></div>
 
-        {/* Contenido principal */}
         <section className="relative z-10 flex items-center justify-center h-screen">
           <a href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
             <Image
