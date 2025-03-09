@@ -76,7 +76,7 @@ export default function Hero() {
         alt="Pregunta"
         width={45}
         height={45}
-        className="md:absolute md:bottom-6 md:right-6 md:mb-0 md:cursor-pointer mb-8"
+        className="md:fixed md:bottom-6 md:right-6 md:mb-0 md:cursor-pointer mb-8"
       />
     </>
   );
