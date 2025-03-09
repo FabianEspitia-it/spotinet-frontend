@@ -79,9 +79,12 @@ export default function TemporalAccess() {
           />
         </a>
         <div className="bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 py-10 w-full max-w-md shadow-lg">
-          <h2 className="text-secondary_blue text-2xl font-bold text-center mb-4">
-            N Estoy de viaje
-          </h2>
+          <div className="flex justify-center mb-4 gap-x-3">
+            <Image src="/images/Net.png" alt="Net" width={32} height={10} />
+            <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4 ">
+              Estoy de viaje
+            </h2>
+          </div>
 
           <hr />
 

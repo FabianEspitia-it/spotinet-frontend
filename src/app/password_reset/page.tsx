@@ -81,9 +81,12 @@ export default function SessionCode() {
         </a>
 
         <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
-          <h2 className="text-secondary_blue text-2xl font-bold text-center mb-4">
-            N Restablecimiento de contraseña
-          </h2>
+          <div className="flex justify-center mb-4 gap-x-3">
+            <Image src="/images/Net.png" alt="Net" width={32} height={10} />
+            <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4 ">
+              Restablecimiento de contraseña
+            </h2>
+          </div>
 
           <hr />
 
