@@ -22,7 +22,7 @@ export default function Hero() {
     {
       label: "Código de inicio de sesión",
       href: "/session_code",
-      img: "/images/dis.png",
+      img: "/images/Dis.png",
     },
   ];
 
