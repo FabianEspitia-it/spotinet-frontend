@@ -78,6 +78,23 @@ export default function Hero() {
         height={45}
         className="md:fixed md:bottom-6 md:right-6 md:mb-0 md:cursor-pointer mb-8"
       />
+      <p className="fixed bottom-12 left-4 text-md text-white opacity-50">
+        Desarrollado por{" "}
+        <a
+          href="https://wa.me/573218544162?text=Holaaa"
+          className="font-semibold"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Fabián Espitia
+        </a>
+      </p>
+      <p className="fixed bottom-6 left-4 text-md text-white opacity-50">
+        Diseñado por{" "}
+        <a href="#" className="font-semibold">
+          Carlos Gamboa
+        </a>
+      </p>
     </>
   );
 }
