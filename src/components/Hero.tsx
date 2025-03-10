@@ -82,7 +82,7 @@ export default function Hero() {
         <p className="md:fixed md:bottom-12 md:left-4 text-md text-white opacity-50">
           Desarrollado por{" "}
           <a
-            href="https://wa.me/573218544162?text=Holaaa"
+            href="https://wa.me/573218544162"
             className="font-semibold"
             target="_blank"
             rel="noreferrer"
@@ -92,7 +92,7 @@ export default function Hero() {
         </p>
         <p className="md:fixed md:bottom-6 md:left-4 text-md bottom-2 text-white opacity-50">
           Diseñado por{" "}
-          <a href="#" className="font-semibold">
+          <a href="https://wa.me/573152543764" className="font-semibold">
             Carlos Gamboa
           </a>
         </p>
