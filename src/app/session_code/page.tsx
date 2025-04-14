@@ -45,7 +45,7 @@ export default function SessionCode() {
             "El código no fue solicitado en los últimos 20 minutos."
           );
           toast.warn(
-            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! 😄"
+            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)"
           );
         } else {
           setResponseMessage(`Código de sesión: ${data.code}`);

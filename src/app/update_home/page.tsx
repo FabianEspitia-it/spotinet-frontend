@@ -39,7 +39,7 @@ export default function UpdateHome() {
         ) {
           setResponseMessage(data.link);
           toast.warn(
-            "No pediste el link en los últimos 20 min. ¡Solicítalo de nuevo! 😄"
+            "No pediste el link en los últimos 20 min. ¡Solicítalo de nuevo! :)"
           );
         } else {
           setResponseMessage(data.link);

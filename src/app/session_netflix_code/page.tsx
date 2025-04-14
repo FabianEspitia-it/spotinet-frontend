@@ -46,7 +46,7 @@ export default function SessionNetflixCode() {
           );
 
           toast.warn(
-            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! 😄"
+            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)"
           );
         } else {
           setResponseMessage(`Código de sesión: ${data.code}`);

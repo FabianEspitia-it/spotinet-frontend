@@ -44,7 +44,7 @@ export default function SessionCode() {
             "El link no fue solicitado en los últimos 20 minutos."
           );
           toast.warn(
-            "No pediste el link en los últimos 20 min. ¡Solicítalo de nuevo! 😄"
+            "No pediste el link en los últimos 20 min. ¡Solicítalo de nuevo! :)"
           );
         } else {
           setResponseMessage(`${data.link}`);
