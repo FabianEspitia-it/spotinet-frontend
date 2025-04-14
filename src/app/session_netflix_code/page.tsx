@@ -38,8 +38,20 @@ export default function SessionNetflixCode() {
 
       if (response.ok) {
         const data = await response.json();
-        setResponseMessage(`Código de sesión: ${data.code}`);
-        toast.success("Gracias por preferirnos :D");
+        if (
+          data.code === "El código no fue solicitado en los últimos 20 minutos."
+        ) {
+          setResponseMessage(
+            "El código no fue solicitado en los últimos 20 minutos."
+          );
+
+          toast.warn(
+            "El código no fue solicitado en los últimos 20 minutos. Por favor solicita el código :D"
+          );
+        } else {
+          setResponseMessage(`Código de sesión: ${data.code}`);
+          toast.success("Gracias por preferirnos :D");
+        }
       } else {
         toast.error(
           "Algo salio mal, por favor verifica el correo y la contraseña"

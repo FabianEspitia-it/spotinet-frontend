@@ -37,8 +37,19 @@ export default function SessionCode() {
 
       if (response.ok) {
         const data = await response.json();
-        setResponseMessage(`${data.link}`);
-        toast.success("Gracias por preferirnos :D");
+        if (
+          data.link === "El link no fue solicitado en los últimos 20 minutos."
+        ) {
+          setResponseMessage(
+            "El link no fue solicitado en los últimos 20 minutos."
+          );
+          toast.warn(
+            "El link no fue solicitado en los últimos 20 minutos. Por favor solicita el link :D"
+          );
+        } else {
+          setResponseMessage(`${data.link}`);
+          toast.success("Gracias por preferirnos :D");
+        }
       } else {
         toast.error(
           "Algo salio mal, por favor verifica el correo y la contraseña"
