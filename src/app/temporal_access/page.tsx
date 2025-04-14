@@ -38,11 +38,11 @@ export default function TemporalAccess() {
         ) {
           setResponseMessage(data.link);
           toast.warn(
-            "El link no fue solicitado en los últimos 20 minutos. Por favor solicita el link :D"
+            "No pediste el link en los últimos 20 min. ¡Solicítalo de nuevo! 😄"
           );
         } else {
           setResponseMessage(data.link);
-          toast.success("Gracias por preferirnos :D");
+          toast.success("Gracias por preferirnos 😄");
         }
 
         console.log(data);

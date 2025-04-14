@@ -46,11 +46,11 @@ export default function SessionNetflixCode() {
           );
 
           toast.warn(
-            "El código no fue solicitado en los últimos 20 minutos. Por favor solicita el código :D"
+            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! 😄"
           );
         } else {
           setResponseMessage(`Código de sesión: ${data.code}`);
-          toast.success("Gracias por preferirnos :D");
+          toast.success("Gracias por preferirnos 😄");
         }
       } else {
         toast.error(
