@@ -111,19 +111,21 @@ export default function TemporalAccess() {
               Por favor digita el correo electrónico de la cuenta:
             </p>
 
-            {responseMessage && (
-              <p className="text-white text-center text-md mb-4">
-                Haz click en el enlace para obtener tu código:
-                <a
-                  className="text-secondary_blue underline"
-                  rel="noreferrer"
-                  target="_blank"
-                  href={responseMessage}
-                >
-                  Spotilink
-                </a>
-              </p>
-            )}
+            {responseMessage &&
+              responseMessage !==
+                "El link no fue solicitado en los últimos 20 minutos." && (
+                <p className="text-white text-center text-md mb-4">
+                  Haz click en el enlace para obtener tu código:
+                  <a
+                    className="text-secondary_blue underline"
+                    rel="noreferrer"
+                    target="_blank"
+                    href={responseMessage}
+                  >
+                    Spotilink
+                  </a>
+                </p>
+              )}
 
             <form className="space-y-4" onSubmit={sendData}>
               <input
