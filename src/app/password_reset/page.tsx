@@ -83,7 +83,7 @@ export default function SessionCode() {
       <div className="relative min-h-screen">
         {/* Imagen de fondo */}
         <Image
-          src="/images/fondo_spotinet.jpg"
+          src="/images/fondo_spotinet.webp"
           alt="Background"
           layout="fill"
           objectFit="cover"

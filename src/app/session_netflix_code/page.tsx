@@ -83,7 +83,7 @@ export default function SessionNetflixCode() {
     <Fade triggerOnce cascade>
       <div className="relative min-h-screen">
         <Image
-          src="/images/fondo_spotinet.jpg"
+          src="/images/fondo_spotinet.webp"
           alt="Background"
           layout="fill"
           objectFit="cover"
