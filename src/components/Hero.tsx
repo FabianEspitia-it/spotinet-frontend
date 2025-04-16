@@ -91,6 +91,10 @@ export default function Hero() {
         height={45}
         className="md:fixed md:bottom-6 md:right-6 md:mb-0 md:cursor-pointer mb-8"
       />
+
+      {/*
+      
+
       <div className="mb-2">
         <p className="md:fixed md:bottom-12 md:left-4 text-md text-white opacity-50">
           Programador:{" "}
@@ -110,6 +114,9 @@ export default function Hero() {
           </a>
         </p>
       </div>
+      
+      
+      */}
     </>
   );
 }
