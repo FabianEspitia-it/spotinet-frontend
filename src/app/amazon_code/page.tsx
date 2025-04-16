@@ -42,7 +42,7 @@ export default function UpdateHome() {
             "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)"
           );
         } else {
-          setResponseMessage(data.code);
+          setResponseMessage(`Código de sesión: ${data.code}`);
           toast.success("Gracias por preferirnos :D");
         }
       } else {
@@ -109,7 +109,7 @@ export default function UpdateHome() {
             </p>
 
             {responseMessage && (
-              <p className="text-secondary_blue text-md my-4">
+              <p className="text-secondary_blue text-center text-md my-4">
                 {responseMessage}
               </p>
             )}
