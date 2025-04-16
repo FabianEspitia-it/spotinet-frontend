@@ -84,6 +84,10 @@ export default function Hero() {
           </section>
         </div>
       </section>
+
+      {/*
+
+
       <Image
         src="/images/Ayuda.svg"
         alt="Pregunta"
@@ -91,8 +95,6 @@ export default function Hero() {
         height={45}
         className="md:fixed md:bottom-6 md:right-6 md:mb-0 md:cursor-pointer mb-8"
       />
-
-      {/*
       
 
       <div className="mb-2">
