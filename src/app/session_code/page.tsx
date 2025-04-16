@@ -82,7 +82,7 @@ export default function SessionCode() {
     <Fade triggerOnce cascade>
       <div className="relative min-h-screen">
         <Image
-          src="/images/fondo_spotinet-min.webp"
+          src="/images/fondo_spotinet.jpg"
           alt="Background"
           layout="fill"
           objectFit="cover"
