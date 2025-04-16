@@ -2,36 +2,32 @@
 
 import { Fade } from "react-awesome-reveal";
 import { FormEvent, useState } from "react";
+import Image from "next/image";
 import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
-import Image from "next/image";
 
-export default function SessionCode() {
+export default function UpdateHome() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [responseMessage, setResponseMessage] = useState("");
+  const [responseMessage, setResponseMessage] = useState<null | string>(null);
 
   async function sendData(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     setLoading(true);
-    setResponseMessage("");
 
     const data = {
       email: email,
-      password: password,
     };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_DISNEY}/session_code/`,
+        `${process.env.NEXT_PUBLIC_PRIME}/session_code/${data.email}`,
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
         }
       );
 
@@ -41,20 +37,16 @@ export default function SessionCode() {
         if (
           data.code === "El código no fue solicitado en los últimos 20 minutos."
         ) {
-          setResponseMessage(
-            "El código no fue solicitado en los últimos 20 minutos."
-          );
+          setResponseMessage(data.code);
           toast.warn(
             "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)"
           );
         } else {
-          setResponseMessage(`Código de sesión: ${data.code}`);
-          toast.success("Gracias por preferirnos 😄");
+          setResponseMessage(data.code);
+          toast.success("Gracias por preferirnos :D");
         }
       } else {
-        toast.error(
-          "Algo salio mal, por favor verifica el correo y la contraseña"
-        );
+        toast.error("Algo salio mal, por favor verifica el correo 😄");
       }
     } catch (error) {
       console.log(error);
@@ -102,10 +94,9 @@ export default function SessionCode() {
               className="w-10 h-10 md:w-14 md:h-14 cursor-pointer"
             />
           </a>
-
-          <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
-            <div className="flex justify-center mb-4 gap-x-3">
-              <Image src="/images/Dis.svg" alt="Net" width={100} height={10} />
+          <div className="bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 py-10 w-full max-w-md shadow-lg">
+            <div className="flex justify-center mb-4 gap-x-2">
+              <Image src="/images/Prime.svg" alt="Net" width={85} height={90} />
               <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
                 Código de inicio de sesión
               </h2>
@@ -113,9 +104,8 @@ export default function SessionCode() {
 
             <hr />
 
-            <p className="text-white text-md md:mb-6 mb-5 mt-5">
-              Por favor digita el correo electrónico de la cuenta y la
-              contraseña spotinet:
+            <p className="text-white text-md text-center mb-4 mt-5">
+              Por favor digita el correo electrónico de la cuenta:
             </p>
 
             {responseMessage && (
@@ -126,21 +116,12 @@ export default function SessionCode() {
 
             <form className="space-y-4" onSubmit={sendData}>
               <input
-                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
+                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-2 py-2 w-full"
                 type="email"
                 placeholder="spotinet@spotinet.com"
                 required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-              />
-
-              <input
-                type="password"
-                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
-                placeholder="Contraseña"
-                required
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
               />
 
               <button

@@ -2,26 +2,31 @@ import Image from "next/image";
 
 export default function Hero() {
   const links = [
-    { label: "Actualizar Hogar", href: "/update_home", img: "/images/Net.png" },
+    { label: "Actualizar Hogar", href: "/update_home", img: "/images/Net.svg" },
     {
       label: "Estoy de viaje",
       href: "/temporal_access",
-      img: "/images/Net.png",
+      img: "/images/Net.svg",
     },
     {
       label: "Código de inicio de sesión",
       href: "/session_netflix_code",
-      img: "/images/Net.png",
+      img: "/images/Net.svg",
     },
     {
       label: "Restablecimiento de contraseña",
       href: "/password_reset",
-      img: "/images/Net.png",
+      img: "/images/Net.svg",
     },
     {
       label: "Código de inicio de sesión",
       href: "/session_code",
-      img: "/images/Dis.png",
+      img: "/images/Dis.svg",
+    },
+    {
+      label: "Código de inicio de sesión",
+      href: "/amazon_code",
+      img: "/images/Prime.svg",
     },
   ];
 
@@ -30,7 +35,7 @@ export default function Hero() {
       <section className="relative flex items-center pt-10 pb-20">
         <div className="mx-auto text-center pt-10">
           <Image
-            src="/images/final_logo.png"
+            src="/images/final_logo.svg"
             alt="Spotinet Logo"
             width={330}
             height={330}
@@ -60,7 +65,15 @@ export default function Hero() {
                 <Image
                   src={link.img}
                   alt={link.label}
-                  width={link.img === "/images/Net.png" ? 34 : 90}
+                  width={
+                    link.img.includes("Net")
+                      ? 34
+                      : link.img.includes("Dis")
+                      ? 100
+                      : link.img.includes("Prime")
+                      ? 70
+                      : 50
+                  }
                   height={10}
                 />
                 <span className="mt-2 text-md font-semibold text-center">
@@ -72,7 +85,7 @@ export default function Hero() {
         </div>
       </section>
       <Image
-        src="/images/Ayuda.png"
+        src="/images/Ayuda.svg"
         alt="Pregunta"
         width={45}
         height={45}
