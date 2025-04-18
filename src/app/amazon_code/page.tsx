@@ -116,16 +116,16 @@ export default function UpdateHome() {
               </a>
             </div>
 
-            <div className="flex justify-center mb-4 gap-x-4">
+            <div className="flex justify-center mb-6 gap-x-4">
               <Image src="/images/Prime.svg" alt="Net" width={78} height={10} />
               <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
                 Código de inicio <br /> de sesión
               </h2>
             </div>
 
-            <hr />
+            <hr className="border-t-2 border-gray-400" />
 
-            <p className="text-white text-md text-center mb-4 mt-5">
+            <p className="text-white text-md text-center mb-4 mt-6">
               Por favor digita el correo electrónico de la cuenta:
             </p>
 
