@@ -104,30 +104,51 @@ export default function SessionNetflixCode() {
             />
           </a>
 
-          <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
-            <div className="flex justify-center mb-4 gap-x-3">
+          <div className="relative text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-8 pt-6 max-w-lg w-full shadow-lg">
+            <div className="flex items-center w-10 self-start -ml-5 mb-4">
+              <a href="/" className="flex items-center">
+                <svg
+                  className="size-6 text-secondary_blue mb-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                <p className="text-secondary_blue">Inicio</p>
+              </a>
+            </div>
+
+            {/* Logo y título */}
+            <div className="flex justify-center items-center mb-4 gap-x-3">
               <Image src="/images/Net.svg" alt="Net" width={32} height={10} />
-              <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
-                Código de inicio de sesión
+              <h2 className="text-secondary_blue text-xl font-bold lowercase">
+                código de inicio <br /> de sesión
               </h2>
             </div>
 
-            <hr />
+            <hr className="border-secondary_blue mb-4" />
 
-            <p className="text-white text-md md:mb-6 mb-5 mt-5">
+            <p className="text-white text-sm mb-5">
               Por favor digita el correo electrónico de la cuenta y la
               contraseña spotinet:
             </p>
 
             {responseMessage && (
-              <p className="text-secondary_blue text-md my-4">
+              <p className="text-secondary_blue text-sm my-3">
                 {responseMessage}
               </p>
             )}
 
             <form className="space-y-4" onSubmit={sendData}>
               <input
-                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
+                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full text-sm"
                 type="email"
                 placeholder="spotinet@spotinet.com"
                 required
@@ -137,7 +158,7 @@ export default function SessionNetflixCode() {
 
               <input
                 type="password"
-                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
+                className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full text-sm"
                 placeholder="Contraseña"
                 required
                 value={password}
@@ -145,7 +166,7 @@ export default function SessionNetflixCode() {
               />
 
               <button
-                className="bg-secondary_blue text-white rounded-xl px-6 py-2 font-semibold hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
+                className="bg-secondary_blue text-white rounded-lg px-6 py-2 font-medium hover:bg-secondary_blue-dark focus:outline-none w-full text-sm"
                 type="submit"
               >
                 Enviar

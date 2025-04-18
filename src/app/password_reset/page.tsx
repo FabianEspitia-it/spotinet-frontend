@@ -81,7 +81,6 @@ export default function SessionCode() {
   return (
     <Fade triggerOnce cascade>
       <div className="relative min-h-screen">
-        {/* Imagen de fondo */}
         <Image
           src="/images/fondo_spotinet.webp"
           alt="Background"
@@ -90,10 +89,9 @@ export default function SessionCode() {
           quality={100}
           className="z-0"
         />
-        {/* Capa oscura superpuesta */}
+
         <div className="absolute inset-0 bg-black opacity-50"></div>
 
-        {/* Contenido principal */}
         <section className="relative z-10 flex items-center justify-center h-screen">
           <a href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
             <Image
@@ -105,11 +103,32 @@ export default function SessionCode() {
             />
           </a>
 
-          <div className="text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-10 pt-4 max-w-lg w-full shadow-lg">
+          <div className="relative text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-8 pt-6 max-w-lg w-full shadow-lg">
+            <div className="flex items-center w-10 self-start -ml-5 mb-4">
+              <a href="/" className="flex items-center">
+                <svg
+                  className="size-6 text-secondary_blue mb-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                <p className="text-secondary_blue">Inicio</p>
+              </a>
+            </div>
+
             <div className="flex justify-center mb-4 gap-x-3">
               <Image src="/images/Net.svg" alt="Net" width={32} height={10} />
               <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
-                Restablecimiento de contraseña
+                Restablecimiento de <br />
+                contraseña
               </h2>
             </div>
 

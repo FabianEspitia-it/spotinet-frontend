@@ -95,7 +95,28 @@ export default function UpdateHome() {
               className="w-10 h-10 md:w-14 md:h-14 cursor-pointer"
             />
           </a>
-          <div className="bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 py-10 w-full max-w-md shadow-lg">
+
+          <div className="relative text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-8 pt-6 max-w-lg w-full shadow-lg">
+            <div className="flex items-center w-10 self-start -ml-5 mb-4">
+              <a href="/" className="flex items-center">
+                <svg
+                  className="size-6 text-secondary_blue mb-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                <p className="text-secondary_blue">Inicio</p>
+              </a>
+            </div>
+
             <div className="flex justify-center mb-4 gap-x-3">
               <Image src="/images/Net.svg" alt="Net" width={32} height={10} />
               <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
