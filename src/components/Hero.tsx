@@ -2,10 +2,9 @@ import Image from "next/image";
 
 export default function Hero() {
   const links = [
-    { label: "Actualizar Hogar", href: "/update_home", img: "/images/Net.svg" },
     {
-      label: "Estoy de viaje",
-      href: "/temporal_access",
+      label: "Actualizar hogar o Estoy de viaje",
+      href: "/home_or_temporal",
       img: "/images/Net.svg",
     },
     {
