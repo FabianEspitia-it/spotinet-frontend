@@ -6,26 +6,31 @@ export default function Hero() {
       label: "Actualizar hogar o Estoy de viaje",
       href: "/home_or_temporal",
       img: "/images/Net.svg",
+      imgHover: "/images/Net2.svg",
     },
     {
       label: "Código de inicio de sesión",
       href: "/session_netflix_code",
       img: "/images/Net.svg",
+      imgHover: "/images/Net2.svg",
     },
     {
       label: "Restablecimiento de contraseña",
       href: "/password_reset",
       img: "/images/Net.svg",
+      imgHover: "/images/Net2.svg",
     },
     {
       label: "Código de inicio de sesión",
       href: "/session_code",
       img: "/images/Dis.svg",
+      imgHover: "/images/Dis2.svg",
     },
     {
       label: "Código de inicio de sesión",
       href: "/amazon_code",
       img: "/images/Prime.svg",
+      imgHover: "/images/Prime2.svg",
     },
   ];
 
@@ -50,31 +55,53 @@ export default function Hero() {
               <a
                 key={index}
                 href={link.href}
-                className={`text-secondary_blue w-44 h-44 border-2 border-secondary_blue flex flex-col items-center justify-center 
-      bg-principal_blue shadow-md hover:bg-secondary_blue hover:text-principal_blue duration-200 transition-all 
-      ${
-        index === 0
-          ? "md:rounded-l-xl md:rounded-r-none rounded-t-xl"
-          : index === links.length - 1
-          ? "md:rounded-r-xl md:rounded-l-none  rounded-b-xl"
-          : ""
-      }`}
+                className={`group text-secondary_blue w-44 h-44 border-2 border-secondary_blue flex flex-col items-center justify-center 
+        bg-principal_blue shadow-md hover:bg-secondary_blue hover:text-principal_blue duration-200 transition-all 
+        ${
+          index === 0
+            ? "md:rounded-l-xl md:rounded-r-none rounded-t-xl"
+            : index === links.length - 1
+            ? "md:rounded-r-xl md:rounded-l-none  rounded-b-xl"
+            : ""
+        }`}
                 aria-label={link.label}
               >
-                <Image
-                  src={link.img}
-                  alt={link.label}
-                  width={
-                    link.img.includes("Net")
-                      ? 34
-                      : link.img.includes("Dis")
-                      ? 100
-                      : link.img.includes("Prime")
-                      ? 70
-                      : 50
-                  }
-                  height={10}
-                />
+                <div className="relative">
+                  {/* Imagen por defecto */}
+                  <Image
+                    src={link.img}
+                    alt={link.label}
+                    width={
+                      link.img.includes("Net")
+                        ? 34
+                        : link.img.includes("Dis")
+                        ? 100
+                        : link.img.includes("Prime")
+                        ? 70
+                        : 50
+                    }
+                    height={10}
+                    className="group-hover:opacity-0 transition-opacity duration-300"
+                  />
+
+                  {/* Imagen en hover */}
+                  <Image
+                    src={link.imgHover}
+                    alt={`${link.label} hover`}
+                    width={
+                      link.img.includes("Net")
+                        ? 34
+                        : link.img.includes("Dis")
+                        ? 100
+                        : link.img.includes("Prime")
+                        ? 70
+                        : 50
+                    }
+                    height={10}
+                    className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  />
+                </div>
+
                 <span className="mt-2 text-md font-semibold text-center">
                   {link.label}
                 </span>
