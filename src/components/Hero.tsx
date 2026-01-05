@@ -32,6 +32,13 @@ export default function Hero() {
       img: "/images/Prime.svg",
       imgHover: "/images/Prime2.svg",
     },
+
+    {
+      label: "Código de inicio de sesión",
+      href: "/hbo_session_code",
+      img: "/images/hbo.png",
+      imgHover: "/images/hbo.png",
+    },
   ];
 
   return (
