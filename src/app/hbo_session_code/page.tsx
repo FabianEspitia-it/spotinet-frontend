@@ -39,7 +39,7 @@ export default function SessionCode() {
           data.code === "El código no fue solicitado en los últimos 20 minutos."
         ) {
           toast.warn(
-            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)"
+            "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)",
           );
         } else {
           setResponseMessage(`Código de sesión: ${data.code}`);
@@ -47,7 +47,7 @@ export default function SessionCode() {
         }
       } else {
         toast.error(
-          "Algo salio mal, por favor verifica el correo y la contraseña"
+          "Algo salio mal, por favor verifica el correo y la contraseña",
         );
       }
     } catch (error) {
@@ -119,7 +119,7 @@ export default function SessionCode() {
             </div>
 
             <div className="flex justify-center mb-6 gap-x-3">
-              <Image src="/images/hbo.png" alt="HBO" width={140} height={10} />
+              <Image src="/images/Hbo.svg" alt="HBO" width={90} height={10} />
               <h2 className="text-secondary_blue text-2xl font-bold text-center mt-4">
                 Código de inicio <br />
                 de sesión

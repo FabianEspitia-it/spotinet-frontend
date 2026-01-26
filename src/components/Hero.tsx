@@ -36,8 +36,8 @@ export default function Hero() {
     {
       label: "Código de inicio de sesión",
       href: "/hbo_session_code",
-      img: "/images/hbo.png",
-      imgHover: "/images/hbo.png",
+      img: "/images/Hbo.svg",
+      imgHover: "/images/Hbo.svg",
     },
   ];
 
@@ -68,8 +68,8 @@ export default function Hero() {
           index === 0
             ? "md:rounded-l-xl md:rounded-r-none rounded-t-xl"
             : index === links.length - 1
-            ? "md:rounded-r-xl md:rounded-l-none  rounded-b-xl"
-            : ""
+              ? "md:rounded-r-xl md:rounded-l-none  rounded-b-xl"
+              : ""
         }`}
                 aria-label={link.label}
               >
@@ -82,10 +82,10 @@ export default function Hero() {
                       link.img.includes("Net")
                         ? 34
                         : link.img.includes("Dis")
-                        ? 100
-                        : link.img.includes("Prime")
-                        ? 70
-                        : 50
+                          ? 100
+                          : link.img.includes("Prime")
+                            ? 70
+                            : 70
                     }
                     height={10}
                     className="group-hover:opacity-0 transition-opacity duration-300"
@@ -99,10 +99,10 @@ export default function Hero() {
                       link.img.includes("Net")
                         ? 34
                         : link.img.includes("Dis")
-                        ? 100
-                        : link.img.includes("Prime")
-                        ? 70
-                        : 50
+                          ? 100
+                          : link.img.includes("Prime")
+                            ? 70
+                            : 50
                     }
                     height={10}
                     className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
