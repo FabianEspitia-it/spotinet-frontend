@@ -39,6 +39,13 @@ export default function Hero() {
       img: "/images/Hbo.svg",
       imgHover: "/images/Hbo.svg",
     },
+
+    {
+      label: "Código de verificación",
+      href: "/netflix_verification_code",
+      img: "/images/Net.svg",
+      imgHover: "/images/Net2.svg",
+    },
   ];
 
   return (
