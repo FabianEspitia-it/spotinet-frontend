@@ -9,6 +9,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 export default function SessionNetflixCode() {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
@@ -20,16 +21,18 @@ export default function SessionNetflixCode() {
 
     const data = {
       email: email,
+      password: password,
     };
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_NETFLIX}/verification_code/${data.email}`,
+        `${process.env.NEXT_PUBLIC_NETFLIX}/verification_code/`,
         {
-          method: "GET",
+          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
+          body: JSON.stringify(data),
         }
       );
 
@@ -142,6 +145,15 @@ export default function SessionNetflixCode() {
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
+                />
+
+                <input
+                  type="password"
+                  className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full text-sm"
+                  placeholder="Contraseña"
+                  required
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
                 />
 
                 <button

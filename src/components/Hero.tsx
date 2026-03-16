@@ -20,6 +20,13 @@ export default function Hero() {
       img: "/images/Net.svg",
       imgHover: "/images/Net2.svg",
     },
+
+    {
+      label: "Código de verificación",
+      href: "/netflix_verification_code",
+      img: "/images/Net.svg",
+      imgHover: "/images/Net2.svg",
+    },
     {
       label: "Código de inicio de sesión",
       href: "/session_code",
@@ -38,13 +45,6 @@ export default function Hero() {
       href: "/hbo_session_code",
       img: "/images/Hbo.svg",
       imgHover: "/images/Hbo.svg",
-    },
-
-    {
-      label: "Código de verificación",
-      href: "/netflix_verification_code",
-      img: "/images/Net.svg",
-      imgHover: "/images/Net2.svg",
     },
   ];
 
