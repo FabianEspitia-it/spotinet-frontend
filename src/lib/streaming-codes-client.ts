@@ -1,4 +1,4 @@
-import { getPublicBackendBaseUrl } from "@/lib/env-public";
+import { getBackendBaseUrl } from "@/lib/env";
 
 export type StreamingResult<T> =
   | { ok: true; data: T }
@@ -13,7 +13,7 @@ type Provider = "netflix" | "disney" | "prime" | "hbo";
 
 function buildUrl(provider: Provider, path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${getPublicBackendBaseUrl()}/${provider}${normalized}`;
+  return `${getBackendBaseUrl()}/${provider}${normalized}`;
 }
 
 async function postJson<T>(

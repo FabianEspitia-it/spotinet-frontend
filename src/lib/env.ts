@@ -1,7 +1,7 @@
 /**
- * URL base del backend. Server-only (sin prefijo `NEXT_PUBLIC_`),
- * por lo que solo debe leerse desde Server Actions, Route Handlers,
- * Server Components o middleware.
+ * URL base del backend (`BACKEND_API_URL`).
+ * Servidor: variable de entorno directa.
+ * Cliente: misma variable, inyectada en build vía `next.config.mjs` → `env`.
  */
 export function getBackendBaseUrl(): string {
   const base = process.env.BACKEND_API_URL?.replace(/\/$/, "");
