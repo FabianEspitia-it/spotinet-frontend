@@ -11,7 +11,6 @@ import { requestNetflixVerificationCode } from "@/lib/streaming-codes-client";
 
 export default function SessionNetflixCode() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
@@ -22,7 +21,7 @@ export default function SessionNetflixCode() {
     setResponseMessage("");
 
     try {
-      const result = await requestNetflixVerificationCode({ email, password });
+      const result = await requestNetflixVerificationCode(email);
 
       if (result.ok) {
         if (
@@ -121,8 +120,7 @@ export default function SessionNetflixCode() {
               <hr className="border-t-2 border-gray-400" />
 
               <p className="text-white text-sm mb-5 mt-6">
-                Por favor digita el correo electrónico de la cuenta y la
-                contraseña spotinet:
+                Por favor digita el correo electrónico de la cuenta:
               </p>
 
               <form className="space-y-4" onSubmit={sendData}>
@@ -133,15 +131,6 @@ export default function SessionNetflixCode() {
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                />
-
-                <input
-                  type="password"
-                  className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-lg px-4 py-2 w-full text-sm"
-                  placeholder="Contraseña"
-                  required
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
                 />
 
                 <button

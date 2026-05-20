@@ -10,7 +10,6 @@ import { requestNetflixPasswordReset } from "@/lib/streaming-codes-client";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
@@ -21,7 +20,7 @@ export default function SessionCode() {
     setResponseMessage("");
 
     try {
-      const result = await requestNetflixPasswordReset({ email, password });
+      const result = await requestNetflixPasswordReset(email);
 
       if (result.ok) {
         if (
@@ -36,9 +35,7 @@ export default function SessionCode() {
           toast.success("Gracias por preferirnos 😄");
         }
       } else {
-        toast.error(
-          "Algo salio mal, por favor verifica el correo y la contraseña"
-        );
+        toast.error("Algo salio mal, por favor verifica el correo");
       }
     } catch (error) {
       console.log(error);
@@ -121,8 +118,7 @@ export default function SessionCode() {
               <hr className="border-t-2 border-gray-400" />
 
               <p className="text-white text-md md:mb-6 mb-5 mt-6">
-                Por favor digita el correo electrónico de la cuenta y la
-                contraseña spotinet:
+                Por favor digita el correo electrónico de la cuenta:
               </p>
 
               <form className="space-y-4" onSubmit={sendData}>
@@ -133,15 +129,6 @@ export default function SessionCode() {
                   required
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
-                />
-
-                <input
-                  type="password"
-                  className="border-2 border-secondary_blue focus:outline-none bg-white text-gray-800 rounded-xl px-2 py-2 w-full"
-                  placeholder="Contraseña"
-                  required
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
                 />
 
                 <button

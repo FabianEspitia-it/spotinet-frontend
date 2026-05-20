@@ -8,8 +8,6 @@ export type StreamingResult<T> =
 export type CodeResponse = { code: string };
 export type LinkResponse = { link: string };
 
-type Credentials = { email: string; password: string };
-
 type Provider = "netflix" | "disney" | "prime" | "hbo";
 
 function buildUrl(provider: Provider, path: string): string {
@@ -82,36 +80,34 @@ async function getJson<T>(url: string): Promise<StreamingResult<T>> {
 }
 
 export function requestNetflixSessionCode(
-  credentials: Credentials
+  email: string
 ): Promise<StreamingResult<CodeResponse>> {
-  return postJson<CodeResponse>(
-    buildUrl("netflix", "/session_code/"),
-    credentials
-  );
+  return postJson<CodeResponse>(buildUrl("netflix", "/session_code/"), {
+    email,
+  });
 }
 
 export function requestNetflixVerificationCode(
-  credentials: Credentials
+  email: string
 ): Promise<StreamingResult<CodeResponse>> {
   return postJson<CodeResponse>(
     buildUrl("netflix", "/verification_code/"),
-    credentials
+    { email }
   );
 }
 
 export function requestHboSessionCode(
-  credentials: Credentials
+  email: string
 ): Promise<StreamingResult<CodeResponse>> {
-  return postJson<CodeResponse>(buildUrl("hbo", "/code/"), credentials);
+  return postJson<CodeResponse>(buildUrl("hbo", "/code/"), { email });
 }
 
 export function requestDisneySessionCode(
-  credentials: Credentials
+  email: string
 ): Promise<StreamingResult<CodeResponse>> {
-  return postJson<CodeResponse>(
-    buildUrl("disney", "/session_code/"),
-    credentials
-  );
+  return postJson<CodeResponse>(buildUrl("disney", "/session_code/"), {
+    email,
+  });
 }
 
 export function requestPrimeSessionCode(
@@ -123,12 +119,11 @@ export function requestPrimeSessionCode(
 }
 
 export function requestNetflixPasswordReset(
-  credentials: Credentials
+  email: string
 ): Promise<StreamingResult<LinkResponse>> {
-  return postJson<LinkResponse>(
-    buildUrl("netflix", "/password_reset/"),
-    credentials
-  );
+  return postJson<LinkResponse>(buildUrl("netflix", "/password_reset/"), {
+    email,
+  });
 }
 
 export function requestNetflixHomeOrTemporal(
