@@ -6,7 +6,7 @@ import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import Link from "next/link";
-import { requestHboSessionCode } from "@/lib/actions/streaming";
+import { requestHboSessionCode } from "@/lib/streaming-codes-client";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");

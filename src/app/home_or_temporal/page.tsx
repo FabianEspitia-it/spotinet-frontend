@@ -6,7 +6,7 @@ import Link from "next/link";
 import { FormEvent, useState } from "react";
 import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
-import { requestNetflixHomeOrTemporal } from "@/lib/actions/streaming";
+import { requestNetflixHomeOrTemporal } from "@/lib/streaming-codes-client";
 
 export default function TemporalAccess() {
   const [email, setEmail] = useState("");

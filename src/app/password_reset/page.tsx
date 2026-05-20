@@ -6,7 +6,7 @@ import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import Image from "next/image";
 import Link from "next/link";
-import { requestNetflixPasswordReset } from "@/lib/actions/streaming";
+import { requestNetflixPasswordReset } from "@/lib/streaming-codes-client";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");

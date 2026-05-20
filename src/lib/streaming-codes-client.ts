@@ -1,8 +1,4 @@
-"use server";
-
-import { cookies } from "next/headers";
-import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
-import { getBackendBaseUrl } from "@/lib/env";
+import { getPublicBackendBaseUrl } from "@/lib/env-public";
 
 export type StreamingResult<T> =
   | { ok: true; data: T }
@@ -17,34 +13,17 @@ type Provider = "netflix" | "disney" | "prime" | "hbo";
 
 function buildUrl(provider: Provider, path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${getBackendBaseUrl()}/${provider}${normalized}`;
-}
-
-/**
- * Lee el access token de la cookie httpOnly (puesta por el flujo de login).
- * Devuelve `null` si la sesión expiró o no existe.
- */
-async function readAccessToken(): Promise<string | null> {
-  const store = await cookies();
-  return store.get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+  return `${getPublicBackendBaseUrl()}/${provider}${normalized}`;
 }
 
 async function postJson<T>(
   url: string,
   body: unknown
 ): Promise<StreamingResult<T>> {
-  const access = await readAccessToken();
-  if (!access) {
-    return { ok: false, status: 401 };
-  }
-
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${access}`,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -62,18 +41,10 @@ async function postJson<T>(
 }
 
 async function getJson<T>(url: string): Promise<StreamingResult<T>> {
-  const access = await readAccessToken();
-  if (!access) {
-    return { ok: false, status: 401 };
-  }
-
   try {
     const res = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${access}`,
-      },
+      headers: { "Content-Type": "application/json" },
       cache: "no-store",
     });
 
@@ -89,7 +60,7 @@ async function getJson<T>(url: string): Promise<StreamingResult<T>> {
   }
 }
 
-export async function requestNetflixSessionCode(
+export function requestNetflixSessionCode(
   credentials: Credentials
 ): Promise<StreamingResult<CodeResponse>> {
   return postJson<CodeResponse>(
@@ -98,7 +69,7 @@ export async function requestNetflixSessionCode(
   );
 }
 
-export async function requestNetflixVerificationCode(
+export function requestNetflixVerificationCode(
   credentials: Credentials
 ): Promise<StreamingResult<CodeResponse>> {
   return postJson<CodeResponse>(
@@ -107,33 +78,13 @@ export async function requestNetflixVerificationCode(
   );
 }
 
-export async function requestNetflixPasswordReset(
-  credentials: Credentials
-): Promise<StreamingResult<LinkResponse>> {
-  return postJson<LinkResponse>(
-    buildUrl("netflix", "/password_reset/"),
-    credentials
-  );
-}
-
-export async function requestNetflixHomeOrTemporal(
-  email: string
-): Promise<StreamingResult<LinkResponse>> {
-  return getJson<LinkResponse>(
-    buildUrl(
-      "netflix",
-      `/home_code_or_temporal_access/${encodeURIComponent(email)}`
-    )
-  );
-}
-
-export async function requestHboSessionCode(
+export function requestHboSessionCode(
   credentials: Credentials
 ): Promise<StreamingResult<CodeResponse>> {
   return postJson<CodeResponse>(buildUrl("hbo", "/code/"), credentials);
 }
 
-export async function requestDisneySessionCode(
+export function requestDisneySessionCode(
   credentials: Credentials
 ): Promise<StreamingResult<CodeResponse>> {
   return postJson<CodeResponse>(
@@ -142,10 +93,30 @@ export async function requestDisneySessionCode(
   );
 }
 
-export async function requestPrimeSessionCode(
+export function requestPrimeSessionCode(
   email: string
 ): Promise<StreamingResult<CodeResponse>> {
   return getJson<CodeResponse>(
     buildUrl("prime", `/session_code/${encodeURIComponent(email)}`)
+  );
+}
+
+export function requestNetflixPasswordReset(
+  credentials: Credentials
+): Promise<StreamingResult<LinkResponse>> {
+  return postJson<LinkResponse>(
+    buildUrl("netflix", "/password_reset/"),
+    credentials
+  );
+}
+
+export function requestNetflixHomeOrTemporal(
+  email: string
+): Promise<StreamingResult<LinkResponse>> {
+  return getJson<LinkResponse>(
+    buildUrl(
+      "netflix",
+      `/home_code_or_temporal_access/${encodeURIComponent(email)}`
+    )
   );
 }

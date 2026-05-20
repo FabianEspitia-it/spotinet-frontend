@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
-import { requestPrimeSessionCode } from "@/lib/actions/streaming";
+import { requestPrimeSessionCode } from "@/lib/streaming-codes-client";
 
 export default function UpdateHome() {
   const [email, setEmail] = useState("");

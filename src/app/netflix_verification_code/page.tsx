@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import Image from "next/image";
 import Link from "next/link";
 import "react-toastify/dist/ReactToastify.css";
-import { requestNetflixVerificationCode } from "@/lib/actions/streaming";
+import { requestNetflixVerificationCode } from "@/lib/streaming-codes-client";
 
 export default function SessionNetflixCode() {
   const [email, setEmail] = useState("");
