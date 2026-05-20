@@ -1,3 +1,4 @@
+import { getClientAccessToken } from "@/lib/auth/get-client-access-token";
 import { getBackendBaseUrl } from "@/lib/env";
 
 export type StreamingResult<T> =
@@ -16,14 +17,29 @@ function buildUrl(provider: Provider, path: string): string {
   return `${getBackendBaseUrl()}/${provider}${normalized}`;
 }
 
+async function authHeaders(): Promise<Headers | null> {
+  const access = await getClientAccessToken();
+  if (!access) return null;
+
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json");
+  headers.set("Authorization", `Bearer ${access}`);
+  return headers;
+}
+
 async function postJson<T>(
   url: string,
   body: unknown
 ): Promise<StreamingResult<T>> {
+  const headers = await authHeaders();
+  if (!headers) {
+    return { ok: false, status: 401 };
+  }
+
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -41,10 +57,15 @@ async function postJson<T>(
 }
 
 async function getJson<T>(url: string): Promise<StreamingResult<T>> {
+  const headers = await authHeaders();
+  if (!headers) {
+    return { ok: false, status: 401 };
+  }
+
   try {
     const res = await fetch(url, {
       method: "GET",
-      headers: { "Content-Type": "application/json" },
+      headers,
       cache: "no-store",
     });
 
