@@ -25,10 +25,9 @@ export default async function RootLayout({
     <html lang="es">
       <body className={poppins.className}>
         <ToastContainer />
-
         {children}
+        <GoogleAnalytics gaId="G-KMP3PXYE98" />
       </body>
-      <GoogleAnalytics gaId="G-KMP3PXYE98" />
     </html>
   );
 }

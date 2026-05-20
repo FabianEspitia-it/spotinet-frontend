@@ -1,4 +1,5 @@
 import Image from "next/image";
+import LogoutButton from "./LogoutButton";
 
 export default function Hero() {
   const links = [
@@ -50,8 +51,14 @@ export default function Hero() {
 
   return (
     <>
-      <section className="relative flex items-center pt-10 pb-20">
-        <div className="mx-auto text-center pt-10">
+      <div className="pointer-events-none fixed right-4 top-4 z-30 sm:right-8 sm:top-6">
+        <div className="pointer-events-auto">
+          <LogoutButton />
+        </div>
+      </div>
+
+      <section className="relative flex w-full items-center pb-20 pt-10">
+        <div className="mx-auto pt-10 text-center">
           <Image
             src="/images/final_logo.svg"
             alt="Spotinet Logo"
@@ -60,7 +67,7 @@ export default function Hero() {
             className="mx-auto"
           />
 
-          <p className="text-lg text-white mt-10">
+          <p className="mt-6 text-lg text-white">
             Por favor selecciona el servicio que deseas utilizar:
           </p>
 

@@ -5,6 +5,8 @@ import { FormEvent, useState } from "react";
 import Loader from "../../components/Loader";
 import { toast } from "react-toastify";
 import Image from "next/image";
+import Link from "next/link";
+import { requestHboSessionCode } from "@/lib/actions/streaming";
 
 export default function SessionCode() {
   const [email, setEmail] = useState("");
@@ -18,31 +20,19 @@ export default function SessionCode() {
     setLoading(true);
     setResponseMessage("");
 
-    const data = {
-      email: email,
-      password: password,
-    };
-
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_HBO}/code/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
+      const result = await requestHboSessionCode({ email, password });
 
-      if (response.ok) {
-        const data = await response.json();
-
+      if (result.ok) {
         if (
-          data.code === "El código no fue solicitado en los últimos 20 minutos."
+          result.data.code ===
+          "El código no fue solicitado en los últimos 20 minutos."
         ) {
           toast.warn(
             "No pediste el código en los últimos 20 min. ¡Solicítalo de nuevo! :)",
           );
         } else {
-          setResponseMessage(`Código de sesión: ${data.code}`);
+          setResponseMessage(`Código de sesión: ${result.data.code}`);
           toast.success("Gracias por preferirnos 😄");
         }
       } else {
@@ -87,7 +77,7 @@ export default function SessionCode() {
         <div className="absolute inset-0 bg-black opacity-50"></div>
 
         <section className="relative z-10 flex items-center justify-center h-screen">
-          <a href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
+          <Link href="/" className="absolute md:top-7 md:left-14 left-5 top-10">
             <Image
               src="/images/logo_spotinet.png"
               alt="Regresar al menú"
@@ -95,11 +85,11 @@ export default function SessionCode() {
               height={60}
               className="w-10 h-10 md:w-14 md:h-14 cursor-pointer"
             />
-          </a>
+          </Link>
 
           <div className="relative text-center bg-principal_blue border-2 border-secondary_blue rounded-lg px-8 pb-8 pt-6 max-w-lg w-full shadow-lg">
             <div className="flex items-center w-10 self-start -ml-5 mb-4">
-              <a href="/" className="flex items-center">
+              <Link href="/" className="flex items-center">
                 <svg
                   className="size-6 text-secondary_blue mb-1"
                   fill="none"
@@ -115,7 +105,7 @@ export default function SessionCode() {
                   />
                 </svg>
                 <p className="text-secondary_blue">Inicio</p>
-              </a>
+              </Link>
             </div>
 
             <div className="flex justify-center mb-6 gap-x-3">
