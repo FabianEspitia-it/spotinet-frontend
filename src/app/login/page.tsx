@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -10,6 +10,35 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [restoringSession, setRestoringSession] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function tryRestoreSession() {
+      try {
+        const res = await fetch("/api/auth/refresh", {
+          method: "POST",
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (!cancelled && res.ok) {
+          router.replace("/");
+          router.refresh();
+        }
+      } catch {
+        // Sin sesión restaurable: mostrar formulario de login.
+      } finally {
+        if (!cancelled) setRestoringSession(false);
+      }
+    }
+
+    void tryRestoreSession();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -38,6 +67,27 @@ export default function LoginPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (restoringSession) {
+    return (
+      <div className="relative flex min-h-screen items-center justify-center overflow-x-hidden">
+        <div className="pointer-events-none absolute inset-0 z-0">
+          <Image
+            src="/images/fondo_spotinet.webp"
+            alt=""
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
+            quality={100}
+          />
+        </div>
+        <p className="relative z-10 text-lg font-medium text-white">
+          Restaurando sesión…
+        </p>
+      </div>
+    );
   }
 
   return (

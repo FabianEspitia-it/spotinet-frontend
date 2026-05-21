@@ -1,7 +1,5 @@
 import { REFRESH_TOKEN_COOKIE } from "./constants";
-import { normalizeAccessToken } from "./is-access-token-valid";
-import { parseAccessFromRefreshResponse } from "./parse-access-from-refresh-response";
-import { parseRefreshTokenFromSetCookie } from "./parse-set-cookie";
+import { parseSessionFromRefreshResponse } from "./parse-session-from-refresh-response";
 import { fetchBackendApi } from "@/server/fetch-backend-api";
 
 export type RefreshedSession = {
@@ -9,35 +7,52 @@ export type RefreshedSession = {
   refreshToken: string;
 };
 
-/** Renueva la sesión con POST /users/refresh usando la cookie refresh_token. */
-export async function fetchRefreshedSession(
+/** Evita múltiples POST /users/refresh en paralelo con el mismo token (rotación). */
+const inflightByRefreshToken = new Map<
+  string,
+  Promise<RefreshedSession | null>
+>();
+
+async function fetchRefreshedSessionOnce(
   refreshToken: string
 ): Promise<RefreshedSession | null> {
   try {
     const res = await fetchBackendApi("/users/refresh", {
       method: "POST",
       headers: {
-        Cookie: `${REFRESH_TOKEN_COOKIE}=${encodeURIComponent(refreshToken)}`,
+        Cookie: `${REFRESH_TOKEN_COOKIE}=${refreshToken}`,
       },
     });
     if (!res.ok) return null;
 
-    const newRefresh =
-      parseRefreshTokenFromSetCookie(res.headers) ?? refreshToken;
-
-    let accessToken: string;
     try {
-      accessToken = normalizeAccessToken(
-        await parseAccessFromRefreshResponse(res)
-      );
+      const parsed = await parseSessionFromRefreshResponse(res);
+      if (!parsed.accessToken) return null;
+      return {
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken ?? refreshToken,
+      };
     } catch {
       return null;
     }
-
-    if (!accessToken) return null;
-
-    return { accessToken, refreshToken: newRefresh };
   } catch {
     return null;
   }
+}
+
+/** Renueva la sesión con POST /users/refresh usando la cookie refresh_token. */
+export async function fetchRefreshedSession(
+  refreshToken: string
+): Promise<RefreshedSession | null> {
+  const existing = inflightByRefreshToken.get(refreshToken);
+  if (existing) return existing;
+
+  const promise = fetchRefreshedSessionOnce(refreshToken).finally(() => {
+    if (inflightByRefreshToken.get(refreshToken) === promise) {
+      inflightByRefreshToken.delete(refreshToken);
+    }
+  });
+
+  inflightByRefreshToken.set(refreshToken, promise);
+  return promise;
 }

@@ -22,7 +22,17 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth/logout/")) return true;
   if (pathname === "/api/auth/refresh") return true;
   if (pathname.startsWith("/api/auth/refresh/")) return true;
+  if (pathname === "/api/auth/access-token") return true;
+  if (pathname.startsWith("/api/auth/access-token/")) return true;
   return false;
+}
+
+/** El route handler de refresh es el único dueño de esa ruta (evita doble POST al backend). */
+function isRefreshApiPath(pathname: string): boolean {
+  return (
+    pathname === "/api/auth/refresh" ||
+    pathname.startsWith("/api/auth/refresh/")
+  );
 }
 
 export async function proxy(request: NextRequest) {
@@ -39,7 +49,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Access token expirado pero hay refresh token → intentar renovar
-  if (refreshToken) {
+  if (refreshToken && !isRefreshApiPath(pathname)) {
     const session = await fetchRefreshedSession(refreshToken);
 
     if (session) {
