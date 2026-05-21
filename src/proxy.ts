@@ -9,11 +9,11 @@ import {
   REFRESH_TOKEN_COOKIE,
 } from "@/lib/auth/constants";
 import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
+import { isPublicPagePath } from "@/lib/auth/public-paths";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
 
-/** Rutas accesibles sin sesión válida (además de estáticos excluidos por `matcher`). */
 function isPublicPath(pathname: string): boolean {
-  if (pathname === "/login" || pathname.startsWith("/login/")) return true;
+  if (isPublicPagePath(pathname)) return true;
   if (pathname === "/api/auth/signin") return true;
   if (pathname.startsWith("/api/auth/signin/")) return true;
   if (pathname === "/api/auth/login") return true;
@@ -27,7 +27,6 @@ function isPublicPath(pathname: string): boolean {
   return false;
 }
 
-/** El route handler de refresh es el único dueño de esa ruta (evita doble POST al backend). */
 function isRefreshApiPath(pathname: string): boolean {
   return (
     pathname === "/api/auth/refresh" ||
@@ -48,18 +47,15 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Access token expirado pero hay refresh token → intentar renovar
-  if (refreshToken && !isRefreshApiPath(pathname)) {
+  // Solo rutas protegidas del servidor (p. ej. /dashboard): refresh en proxy.
+  // Las páginas públicas renuevan sesión vía SessionRestore en el cliente.
+  const needsServerRefresh =
+    refreshToken && !isRefreshApiPath(pathname) && !isPublicPath(pathname);
+
+  if (needsServerRefresh) {
     const session = await fetchRefreshedSession(refreshToken);
 
     if (session) {
-      if (pathname === "/login" || pathname.startsWith("/login/")) {
-        const redirect = NextResponse.redirect(new URL("/", request.url));
-        applySessionCookiesToResponse(redirect, session);
-        applySessionCookiesToRequest(request, session);
-        return redirect;
-      }
-
       const response = NextResponse.next();
       applySessionCookiesToResponse(response, session);
       applySessionCookiesToRequest(request, session);
@@ -67,7 +63,6 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Sin token válido y sin refresh posible
   if (isPublicPath(pathname)) {
     return NextResponse.next();
   }
@@ -81,9 +76,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Excluye estáticos de Next y assets comunes; el resto pasa por la proxy.
-     */
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|eot)$).*)",
   ],
 };
