@@ -3,7 +3,6 @@ import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ToastContainer } from "react-toastify";
 import { GoogleAnalytics } from "@next/third-parties/google";
-import { SessionRestore } from "@/components/SessionRestore";
 import "react-toastify/dist/ReactToastify.css";
 
 const poppins = Poppins({
@@ -26,7 +25,6 @@ export default async function RootLayout({
     <html lang="es">
       <body className={poppins.className}>
         <ToastContainer />
-        <SessionRestore />
         {children}
         <GoogleAnalytics gaId="G-KMP3PXYE98" />
       </body>

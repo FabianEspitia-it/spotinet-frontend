@@ -47,15 +47,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Solo rutas protegidas del servidor (p. ej. /dashboard): refresh en proxy.
-  // Las páginas públicas renuevan sesión vía SessionRestore en el cliente.
-  const needsServerRefresh =
-    refreshToken && !isRefreshApiPath(pathname) && !isPublicPath(pathname);
-
-  if (needsServerRefresh) {
+  // Access expirado pero hay refresh_token → renovar en el servidor (7 días).
+  // Aplica a todas las rutas excepto POST /api/auth/refresh (evita doble POST al backend).
+  if (refreshToken && !isRefreshApiPath(pathname)) {
     const session = await fetchRefreshedSession(refreshToken);
 
     if (session) {
+      if (pathname === "/login" || pathname.startsWith("/login/")) {
+        const redirect = NextResponse.redirect(new URL("/", request.url));
+        applySessionCookiesToResponse(redirect, session);
+        applySessionCookiesToRequest(request, session);
+        return redirect;
+      }
+
       const response = NextResponse.next();
       applySessionCookiesToResponse(response, session);
       applySessionCookiesToRequest(request, session);
