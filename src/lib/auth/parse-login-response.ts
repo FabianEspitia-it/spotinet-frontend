@@ -1,25 +1,11 @@
-function refreshFromSetCookieHeaders(headers: Headers): string | undefined {
-  const withGetSetCookie = headers as Headers & { getSetCookie?: () => string[] };
-  const lines =
-    typeof withGetSetCookie.getSetCookie === "function"
-      ? withGetSetCookie.getSetCookie()
-      : headers.get("set-cookie")
-        ? [headers.get("set-cookie") as string]
-        : [];
-
-  for (const line of lines) {
-    const m = line.match(/^\s*refresh_token=([^;]+)/i);
-    if (m) return decodeURIComponent(m[1]);
-  }
-  return undefined;
-}
+import { parseRefreshTokenFromSetCookie } from "./parse-set-cookie";
 
 /** Reads access (and optionally refresh) token from backend login response. */
 export async function parseLoginTokens(res: Response): Promise<{
   accessToken: string;
   refreshToken?: string;
 }> {
-  const refreshFromCookie = refreshFromSetCookieHeaders(res.headers);
+  const refreshFromCookie = parseRefreshTokenFromSetCookie(res.headers);
 
   const ct = res.headers.get("content-type") ?? "";
   if (ct.includes("application/json")) {
