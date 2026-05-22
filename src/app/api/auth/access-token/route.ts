@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "@/lib/auth/constants";
-import { fetchRefreshedSessionAttempt } from "@/lib/auth/refresh-session";
+import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
 import {
   isAccessTokenValid,
   normalizeAccessToken,

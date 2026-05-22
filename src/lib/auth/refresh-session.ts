@@ -8,32 +8,14 @@ export type RefreshedSession = {
   refreshToken: string;
 };
 
-export type RefreshFailureReason = "network" | "upstream" | "parse";
-
-export type RefreshAttemptResult =
-  | { ok: true; session: RefreshedSession }
-  | {
-      ok: false;
-      reason: RefreshFailureReason;
-      upstreamStatus?: number;
-      upstreamDetail?: string;
-    };
-
 export type RefreshAttemptOptions = {
-  /** Cabecera Cookie del navegador → se reenvía al backend. */
   forwardCookieHeader?: string | null;
 };
 
 const inflightByRefreshToken = new Map<
   string,
-  Promise<RefreshAttemptResult>
+  Promise<RefreshedSession | null>
 >();
-
-async function readUpstreamDetail(res: Response): Promise<string | undefined> {
-  const raw = await res.text().catch(() => "");
-  const trimmed = raw.trim().slice(0, 300);
-  return trimmed || undefined;
-}
 
 function buildRefreshHeaders(
   refreshToken: string,
@@ -52,11 +34,9 @@ function buildRefreshHeaders(
 async function fetchRefreshedSessionOnce(
   rawRefreshToken: string,
   options?: RefreshAttemptOptions
-): Promise<RefreshAttemptResult> {
+): Promise<RefreshedSession | null> {
   const refreshToken = normalizeRefreshToken(rawRefreshToken);
-  if (!refreshToken) {
-    return { ok: false, reason: "upstream", upstreamStatus: 400 };
-  }
+  if (!refreshToken) return null;
 
   try {
     const res = await fetchBackendApi("/users/refresh", {
@@ -68,32 +48,20 @@ async function fetchRefreshedSessionOnce(
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
-    if (!res.ok) {
-      return {
-        ok: false,
-        reason: "upstream",
-        upstreamStatus: res.status,
-        upstreamDetail: await readUpstreamDetail(res),
-      };
-    }
+    if (!res.ok) return null;
 
     try {
       const parsed = await parseSessionFromRefreshResponse(res);
-      if (!parsed.accessToken) {
-        return { ok: false, reason: "parse" };
-      }
+      if (!parsed.accessToken) return null;
       return {
-        ok: true,
-        session: {
-          accessToken: parsed.accessToken,
-          refreshToken: parsed.refreshToken ?? refreshToken,
-        },
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken ?? refreshToken,
       };
     } catch {
-      return { ok: false, reason: "parse" };
+      return null;
     }
   } catch {
-    return { ok: false, reason: "network" };
+    return null;
   }
 }
 
@@ -101,14 +69,6 @@ export async function fetchRefreshedSession(
   refreshToken: string,
   options?: RefreshAttemptOptions
 ): Promise<RefreshedSession | null> {
-  const result = await fetchRefreshedSessionAttempt(refreshToken, options);
-  return result.ok ? result.session : null;
-}
-
-export async function fetchRefreshedSessionAttempt(
-  refreshToken: string,
-  options?: RefreshAttemptOptions
-): Promise<RefreshAttemptResult> {
   const key = normalizeRefreshToken(refreshToken);
   const existing = inflightByRefreshToken.get(key);
   if (existing) return existing;

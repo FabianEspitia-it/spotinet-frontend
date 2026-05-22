@@ -24,8 +24,6 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth/refresh/")) return true;
   if (pathname === "/api/auth/access-token") return true;
   if (pathname.startsWith("/api/auth/access-token/")) return true;
-  if (pathname === "/api/auth/diagnose") return true;
-  if (pathname.startsWith("/api/auth/diagnose/")) return true;
   return false;
 }
 
