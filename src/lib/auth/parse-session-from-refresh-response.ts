@@ -1,20 +1,66 @@
 import { normalizeAccessToken } from "./is-access-token-valid";
-import { parseRefreshTokenFromSetCookie } from "./parse-set-cookie";
+import {
+  parseAccessTokenFromSetCookie,
+  parseRefreshTokenFromSetCookie,
+} from "./parse-set-cookie";
 
 type ParsedRefreshResponse = {
   accessToken: string;
   refreshToken?: string;
 };
 
+function readAccessFromObject(o: Record<string, unknown>): string | undefined {
+  const direct =
+    o.access_token ?? o.accessToken ?? o.token ?? o.access;
+  if (typeof direct === "string") return direct;
+
+  const nested = o.data;
+  if (nested && typeof nested === "object") {
+    const inner = nested as Record<string, unknown>;
+    const fromNested =
+      inner.access_token ?? inner.accessToken ?? inner.token ?? inner.access;
+    if (typeof fromNested === "string") return fromNested;
+  }
+
+  return undefined;
+}
+
+function readRefreshFromObject(
+  o: Record<string, unknown>,
+  refreshFromHeader: string | undefined
+): string | undefined {
+  const direct = o.refresh_token ?? o.refreshToken;
+  if (typeof direct === "string") return direct;
+
+  const nested = o.data;
+  if (nested && typeof nested === "object") {
+    const inner = nested as Record<string, unknown>;
+    const fromNested = inner.refresh_token ?? inner.refreshToken;
+    if (typeof fromNested === "string") return fromNested;
+  }
+
+  return refreshFromHeader;
+}
+
 /** Lee access (+ refresh opcional) del body y/o Set-Cookie de POST /users/refresh. */
 export async function parseSessionFromRefreshResponse(
   res: Response
 ): Promise<ParsedRefreshResponse> {
   const refreshFromHeader = parseRefreshTokenFromSetCookie(res.headers);
+  const accessFromHeader = parseAccessTokenFromSetCookie(res.headers);
   const ct = res.headers.get("content-type") ?? "";
+  const raw = await res.text();
+  const text = raw.trim();
 
-  if (ct.includes("application/json")) {
-    const data: unknown = await res.json();
+  if (ct.includes("application/json") || (text.startsWith("{") && text.endsWith("}"))) {
+    let data: unknown = null;
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error("Invalid JSON in refresh response");
+      }
+    }
 
     if (typeof data === "string") {
       const accessToken = normalizeAccessToken(data);
@@ -24,9 +70,8 @@ export async function parseSessionFromRefreshResponse(
 
     if (data && typeof data === "object") {
       const o = data as Record<string, unknown>;
-      const accessRaw = o.access_token ?? o.accessToken ?? o.token;
-      const refreshRaw =
-        o.refresh_token ?? o.refreshToken ?? refreshFromHeader;
+      const accessRaw = readAccessFromObject(o) ?? accessFromHeader;
+      const refreshRaw = readRefreshFromObject(o, refreshFromHeader);
 
       if (typeof accessRaw !== "string") {
         throw new Error("Refresh response did not include an access token");
@@ -34,19 +79,24 @@ export async function parseSessionFromRefreshResponse(
 
       return {
         accessToken: normalizeAccessToken(accessRaw),
-        refreshToken:
-          typeof refreshRaw === "string" ? refreshRaw : refreshFromHeader,
+        refreshToken: refreshRaw,
       };
     }
-
-    throw new Error("Refresh response did not include an access token");
   }
 
-  const text = (await res.text()).trim();
-  if (!text) throw new Error("Empty refresh response");
+  if (text) {
+    return {
+      accessToken: normalizeAccessToken(text),
+      refreshToken: refreshFromHeader,
+    };
+  }
 
-  return {
-    accessToken: normalizeAccessToken(text),
-    refreshToken: refreshFromHeader,
-  };
+  if (accessFromHeader) {
+    return {
+      accessToken: normalizeAccessToken(accessFromHeader),
+      refreshToken: refreshFromHeader,
+    };
+  }
+
+  throw new Error("Empty refresh response");
 }

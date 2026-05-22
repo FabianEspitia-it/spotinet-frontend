@@ -20,8 +20,10 @@ async function fetchRefreshedSessionOnce(
     const res = await fetchBackendApi("/users/refresh", {
       method: "POST",
       headers: {
+        "Content-Type": "application/json",
         Cookie: `${REFRESH_TOKEN_COOKIE}=${refreshToken}`,
       },
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
     if (!res.ok) return null;
 

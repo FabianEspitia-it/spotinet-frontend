@@ -4,9 +4,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 /**
- * Al cargar la app, renueva la sesión si hay refresh_token pero falta access.
- * El proxy también renueva en el servidor; esto cubre recargas donde el refresh
- * del proxy no aplica cookies visibles al cliente (p. ej. página estática /login).
+ * Si falta access pero hay refresh, pide token al BFF sin repetir POST /users/refresh
+ * cuando el access aún es válido (evita invalidar refresh por rotación en prod).
  */
 export function SessionRestore() {
   const router = useRouter();
@@ -19,8 +18,7 @@ export function SessionRestore() {
 
     void (async () => {
       try {
-        const res = await fetch("/api/auth/refresh", {
-          method: "POST",
+        const res = await fetch("/api/auth/access-token", {
           credentials: "include",
           cache: "no-store",
         });
