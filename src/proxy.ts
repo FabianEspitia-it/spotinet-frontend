@@ -24,6 +24,8 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth/refresh/")) return true;
   if (pathname === "/api/auth/access-token") return true;
   if (pathname.startsWith("/api/auth/access-token/")) return true;
+  if (pathname === "/api/auth/diagnose") return true;
+  if (pathname.startsWith("/api/auth/diagnose/")) return true;
   return false;
 }
 
@@ -47,14 +49,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Access expirado pero hay refresh_token → renovar en el servidor (7 días).
-  // En /login lo hace SessionRestore vía POST /api/auth/refresh (evita doble refresh con rotación).
-  const isLoginPath =
-    pathname === "/login" || pathname.startsWith("/login/");
+  // Renovar solo en rutas protegidas. Las públicas usan SessionRestore (un solo POST /api/auth/refresh).
   if (
     refreshToken &&
     !isRefreshApiPath(pathname) &&
-    !isLoginPath
+    !isPublicPagePath(pathname)
   ) {
     const session = await fetchRefreshedSession(refreshToken);
 

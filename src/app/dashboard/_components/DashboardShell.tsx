@@ -1,5 +1,6 @@
 "use client";
 
+import { clearCachedAccessToken } from "@/lib/auth/refresh-client";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -64,6 +65,7 @@ export default function DashboardShell({ children }: { children: ReactNode }) {
     setLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      clearCachedAccessToken();
       router.replace("/login");
       router.refresh();
     } finally {

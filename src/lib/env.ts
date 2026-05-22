@@ -10,3 +10,14 @@ export function getBackendBaseUrl(): string {
   }
   return base;
 }
+
+/** Host del backend para diagnóstico (sin credenciales ni path). */
+export function getBackendHostForDiagnose(): string | null {
+  const base = process.env.BACKEND_API_URL?.replace(/\/$/, "");
+  if (!base) return null;
+  try {
+    return new URL(base).host;
+  } catch {
+    return null;
+  }
+}

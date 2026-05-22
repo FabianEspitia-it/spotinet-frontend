@@ -1,11 +1,10 @@
 "use client";
 
+import { refreshSessionFromClient } from "@/lib/auth/refresh-client";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-/**
- * Si falta access válido, POST /api/auth/refresh setea access_token (y refresh) en cookies.
- */
+/** Al cargar, renueva sesión con POST /api/auth/refresh si hay refresh_token. */
 export function SessionRestore() {
   const router = useRouter();
   const pathname = usePathname();
@@ -17,19 +16,9 @@ export function SessionRestore() {
 
     void (async () => {
       try {
-        const hasAccess = await fetch("/api/auth/access-token", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (hasAccess.ok) return;
-
-        const res = await fetch("/api/auth/refresh", {
-          method: "POST",
-          credentials: "include",
-          cache: "no-store",
-        });
+        const token = await refreshSessionFromClient();
         if (
-          res.ok &&
+          token &&
           (pathname === "/login" || pathname.startsWith("/login/"))
         ) {
           router.replace("/");
