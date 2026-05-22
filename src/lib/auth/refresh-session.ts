@@ -8,11 +8,6 @@ export type RefreshedSession = {
   refreshToken: string;
 };
 
-const inflightByRefreshToken = new Map<
-  string,
-  Promise<RefreshedSession | null>
->();
-
 async function fetchRefreshedSessionOnce(
   rawRefreshToken: string
 ): Promise<RefreshedSession | null> {
@@ -34,6 +29,7 @@ async function fetchRefreshedSessionOnce(
     try {
       const parsed = await parseSessionFromRefreshResponse(res);
       if (!parsed.accessToken) return null;
+
       return {
         accessToken: parsed.accessToken,
         refreshToken: parsed.refreshToken ?? refreshToken,
@@ -46,20 +42,27 @@ async function fetchRefreshedSessionOnce(
   }
 }
 
-/** Renueva la sesión con POST /users/refresh (solo envía refresh_token, sin otras cookies). */
+/** Prueba cada refresh_token hasta que el backend acepte uno (rotación + cookies duplicadas). */
+export async function resolveRefreshedSession(
+  refreshTokens: string[]
+): Promise<RefreshedSession | null> {
+  const seen = new Set<string>();
+
+  for (const raw of refreshTokens) {
+    const refreshToken = normalizeRefreshToken(raw);
+    if (!refreshToken || seen.has(refreshToken)) continue;
+    seen.add(refreshToken);
+
+    const session = await fetchRefreshedSessionOnce(refreshToken);
+    if (session) return session;
+  }
+
+  return null;
+}
+
+/** Renueva la sesión con POST /users/refresh. */
 export async function fetchRefreshedSession(
   refreshToken: string
 ): Promise<RefreshedSession | null> {
-  const key = normalizeRefreshToken(refreshToken);
-  const existing = inflightByRefreshToken.get(key);
-  if (existing) return existing;
-
-  const promise = fetchRefreshedSessionOnce(refreshToken).finally(() => {
-    if (inflightByRefreshToken.get(key) === promise) {
-      inflightByRefreshToken.delete(key);
-    }
-  });
-
-  inflightByRefreshToken.set(key, promise);
-  return promise;
+  return fetchRefreshedSessionOnce(refreshToken);
 }

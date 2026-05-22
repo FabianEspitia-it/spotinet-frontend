@@ -5,11 +5,13 @@ import {
   applySessionCookiesToResponse,
   clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
-import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
+import {
+  ACCESS_TOKEN_COOKIE,
+} from "@/lib/auth/constants";
 import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
 import { isPublicPagePath } from "@/lib/auth/public-paths";
-import { getRefreshTokenFromRequest } from "@/lib/auth/read-request-cookies";
-import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
+import { getRefreshTokenCandidatesFromRequest } from "@/lib/auth/read-request-cookies";
+import { resolveRefreshedSession } from "@/lib/auth/refresh-session";
 
 function isPublicPath(pathname: string): boolean {
   if (isPublicPagePath(pathname)) return true;
@@ -41,17 +43,19 @@ function redirectToLogin(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL("/login", request.url));
 }
 
-function respondWithRefreshedSession(
+function applyRefreshedSession(
   request: NextRequest,
-  session: { accessToken: string; refreshToken: string },
-  redirectTo?: string
-): NextResponse {
-  if (redirectTo) {
-    const response = NextResponse.redirect(new URL(redirectTo, request.url));
-    applySessionCookiesToResponse(response, session);
-    return response;
-  }
+  response: NextResponse,
+  session: { accessToken: string; refreshToken: string }
+): void {
+  applySessionCookiesToResponse(response, session);
+  applySessionCookiesToRequest(request, session);
+}
 
+function continueWithRefreshedSession(
+  request: NextRequest,
+  session: { accessToken: string; refreshToken: string }
+): NextResponse {
   const requestHeaders = applySessionCookiesToRequest(request, session);
   const response = NextResponse.next({
     request: { headers: requestHeaders },
@@ -63,7 +67,8 @@ function respondWithRefreshedSession(
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
-  const refreshToken = getRefreshTokenFromRequest(request);
+  const refreshCandidates = getRefreshTokenCandidatesFromRequest(request);
+  const refreshToken = refreshCandidates[0];
   const valid = isAccessTokenValid(token);
 
   if (valid) {
@@ -73,20 +78,17 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (refreshToken && !isRefreshApiPath(pathname)) {
-    const session = await fetchRefreshedSession(refreshToken);
+  if (refreshCandidates.length > 0 && !isRefreshApiPath(pathname)) {
+    const session = await resolveRefreshedSession(refreshCandidates);
 
     if (session) {
       if (isLoginPath(pathname)) {
-        return respondWithRefreshedSession(request, session, "/");
+        const response = NextResponse.redirect(new URL("/", request.url));
+        applyRefreshedSession(request, response, session);
+        return response;
       }
 
-      const requestHeaders = applySessionCookiesToRequest(request, session);
-      const response = NextResponse.next({
-        request: { headers: requestHeaders },
-      });
-      applySessionCookiesToResponse(response, session);
-      return response;
+      return continueWithRefreshedSession(request, session);
     }
   }
 

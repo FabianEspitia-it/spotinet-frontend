@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import { REFRESH_TOKEN_COOKIE } from "./constants";
 import { normalizeRefreshToken } from "./normalize-refresh-token";
 
-function decodeJwtExp(token: string): number | null {
+function decodeJwtIat(token: string): number | null {
   const parts = token.split(".");
   if (parts.length !== 3 || !parts[1]) return null;
 
@@ -10,45 +10,42 @@ function decodeJwtExp(token: string): number | null {
     const segment = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     const pad = segment.length % 4;
     const padded = pad === 0 ? segment : segment + "=".repeat(4 - pad);
-    const payload = JSON.parse(atob(padded)) as { exp?: number };
-    return typeof payload.exp === "number" ? payload.exp : null;
+    const payload = JSON.parse(atob(padded)) as { iat?: number };
+    return typeof payload.iat === "number" ? payload.iat : null;
   } catch {
     return null;
   }
 }
 
-/** Elige el refresh_token con exp más lejano si hay cookies duplicadas (host vs .domain). */
-export function getRefreshTokenFromRequest(
-  request: NextRequest
-): string | undefined {
-  const candidates = new Set<string>();
+function addCandidate(seen: Set<string>, tokens: string[], raw: string | undefined): void {
+  const token = raw ? normalizeRefreshToken(raw) : "";
+  if (!token || seen.has(token)) return;
+  seen.add(token);
+  tokens.push(token);
+}
 
-  const fromJar = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
-  if (fromJar) candidates.add(fromJar);
+/** Todos los refresh_token distintos del request (p. ej. host-only + .domain en prod). */
+export function getRefreshTokenCandidatesFromRequest(
+  request: NextRequest
+): string[] {
+  const seen = new Set<string>();
+  const tokens: string[] = [];
 
   const raw = request.headers.get("cookie");
   if (raw) {
     for (const match of raw.matchAll(/refresh_token=([^;]+)/gi)) {
-      candidates.add(decodeURIComponent(match[1].trim()));
+      addCandidate(seen, tokens, decodeURIComponent(match[1].trim()));
     }
   }
 
-  let bestJwt: string | undefined;
-  let bestExp = -1;
-  let fallback: string | undefined;
+  addCandidate(seen, tokens, request.cookies.get(REFRESH_TOKEN_COOKIE)?.value);
 
-  for (const rawToken of candidates) {
-    const token = normalizeRefreshToken(rawToken);
-    if (!token) continue;
+  return tokens.sort((a, b) => (decodeJwtIat(b) ?? 0) - (decodeJwtIat(a) ?? 0));
+}
 
-    fallback ??= token;
-
-    const exp = decodeJwtExp(token);
-    if (exp !== null && exp > bestExp) {
-      bestExp = exp;
-      bestJwt = token;
-    }
-  }
-
-  return bestJwt ?? fallback;
+/** Un solo candidato (compatibilidad). */
+export function getRefreshTokenFromRequest(
+  request: NextRequest
+): string | undefined {
+  return getRefreshTokenCandidatesFromRequest(request)[0];
 }

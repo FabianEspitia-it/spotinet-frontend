@@ -7,11 +7,22 @@ function getSetCookieLines(headers: Headers): string[] {
   const withGetSetCookie = headers as Headers & {
     getSetCookie?: () => string[];
   };
-  return typeof withGetSetCookie.getSetCookie === "function"
-    ? withGetSetCookie.getSetCookie()
-    : headers.get("set-cookie")
-      ? [headers.get("set-cookie") as string]
-      : [];
+
+  if (typeof withGetSetCookie.getSetCookie === "function") {
+    const lines = withGetSetCookie.getSetCookie();
+    if (lines.length > 0) return lines;
+  }
+
+  const lines: string[] = [];
+  headers.forEach((value, key) => {
+    if (key.toLowerCase() === "set-cookie") {
+      lines.push(value);
+    }
+  });
+  if (lines.length > 0) return lines;
+
+  const single = headers.get("set-cookie");
+  return single ? [single] : [];
 }
 
 function parseCookieFromSetCookie(

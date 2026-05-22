@@ -10,6 +10,29 @@ import {
 } from "./cookie-options";
 import type { RefreshedSession } from "./refresh-session";
 
+function buildCookieHeader(
+  rawCookieHeader: string | null,
+  session: RefreshedSession
+): string {
+  const jar = new Map<string, string>();
+
+  if (rawCookieHeader) {
+    for (const part of rawCookieHeader.split(";")) {
+      const trimmed = part.trim();
+      const idx = trimmed.indexOf("=");
+      if (idx <= 0) continue;
+      jar.set(trimmed.slice(0, idx).trim(), trimmed.slice(idx + 1).trim());
+    }
+  }
+
+  jar.set(ACCESS_TOKEN_COOKIE, session.accessToken);
+  jar.set(REFRESH_TOKEN_COOKIE, session.refreshToken);
+
+  return Array.from(jar.entries())
+    .map(([name, value]) => `${name}=${value}`)
+    .join("; ");
+}
+
 export function applySessionCookiesToResponse(
   response: NextResponse,
   session: RefreshedSession
@@ -31,13 +54,7 @@ export function applySessionCookiesToRequest(
   request.cookies.set(REFRESH_TOKEN_COOKIE, session.refreshToken);
 
   const headers = new Headers(request.headers);
-  const cookieHeader = request.cookies
-    .getAll()
-    .map((cookie) => `${cookie.name}=${cookie.value}`)
-    .join("; ");
-  if (cookieHeader) {
-    headers.set("cookie", cookieHeader);
-  }
+  headers.set("cookie", buildCookieHeader(request.headers.get("cookie"), session));
   return headers;
 }
 
