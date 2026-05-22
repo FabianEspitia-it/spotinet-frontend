@@ -43,7 +43,7 @@ async function ensureAdmin() {
     redirect("/login");
   }
 
-  if (res.status === 403 || (await isAdminMessage(res))) {
+  if (res.status === 401 || res.status === 403 || (await isAdminMessage(res))) {
     notFound();
   }
 }
