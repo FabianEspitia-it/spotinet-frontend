@@ -1,12 +1,8 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
-import DashboardSessionBootstrap from "./_components/DashboardSessionBootstrap";
 import DashboardShell from "./_components/DashboardShell";
-import {
-  ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN_COOKIE,
-} from "@/lib/auth/constants";
+import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
 import {
   isAccessTokenValid,
   isAdminAccessToken,
@@ -57,17 +53,6 @@ export default async function DashboardLayout({
 }: {
   children: ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
-  const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
-
-  if (!accessToken || !isAccessTokenValid(accessToken)) {
-    if (refreshToken) {
-      return <DashboardSessionBootstrap />;
-    }
-    redirect("/login");
-  }
-
   await ensureAdmin();
   return <DashboardShell>{children}</DashboardShell>;
 }
