@@ -39,6 +39,13 @@ function isRefreshApiPath(pathname: string): boolean {
   );
 }
 
+function isRscRequest(request: NextRequest): boolean {
+  return (
+    request.headers.get("Rsc") === "1" ||
+    request.headers.get("Next-Router-Prefetch") === "1"
+  );
+}
+
 function redirectToLogin(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL("/login", request.url));
 }
@@ -103,6 +110,11 @@ export async function proxy(request: NextRequest) {
 
   if (pathname.startsWith("/api/")) {
     return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
+  }
+
+  // Peticiones RSC/prefetch ocultas en Network: no redirigir; el documento principal renueva.
+  if (isRscRequest(request)) {
+    return NextResponse.next();
   }
 
   return redirectToLogin(request);
