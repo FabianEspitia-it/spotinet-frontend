@@ -35,20 +35,6 @@ function isRefreshApiPath(pathname: string): boolean {
   );
 }
 
-/** Evita doble POST /users/refresh: documento vs RSC/prefetch en la misma carga. */
-function isDocumentNavigation(request: NextRequest): boolean {
-  const { pathname } = request.nextUrl;
-  if (pathname.startsWith("/_next")) return false;
-  if (request.headers.get("Rsc") === "1") return false;
-  if (request.headers.get("Next-Router-Prefetch") === "1") return false;
-  if (request.headers.get("Purpose") === "prefetch") return false;
-
-  const dest = request.headers.get("Sec-Fetch-Dest");
-  if (dest && dest !== "document" && dest !== "iframe") return false;
-
-  return true;
-}
-
 function redirectToLogin(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL("/login", request.url));
 }
@@ -74,8 +60,7 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = getRefreshTokenFromRequest(request);
   const valid = isAccessTokenValid(token);
-  const canRefresh =
-    isDocumentNavigation(request) && refreshToken && !isRefreshApiPath(pathname);
+  const canRefresh = Boolean(refreshToken) && !isRefreshApiPath(pathname);
 
   if (valid) {
     if (isLoginPath(pathname)) {
@@ -84,7 +69,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (canRefresh) {
+  if (canRefresh && refreshToken) {
     const session = await fetchRefreshedSession(refreshToken);
 
     if (session) {

@@ -5,7 +5,7 @@ import {
 } from "./constants";
 import {
   accessTokenCookie,
-  clearedCookie,
+  clearedCookieVariants,
   refreshTokenCookie,
 } from "./cookie-options";
 import type { RefreshedSession } from "./refresh-session";
@@ -32,8 +32,10 @@ export function applySessionCookiesToRequest(
 }
 
 export function clearSessionCookiesOnResponse(response: NextResponse): void {
-  const a = clearedCookie(ACCESS_TOKEN_COOKIE);
-  const r = clearedCookie(REFRESH_TOKEN_COOKIE);
-  response.cookies.set(a.name, a.value, a.opts);
-  response.cookies.set(r.name, r.value, r.opts);
+  for (const variant of clearedCookieVariants(ACCESS_TOKEN_COOKIE)) {
+    response.cookies.set(variant.name, variant.value, variant.opts);
+  }
+  for (const variant of clearedCookieVariants(REFRESH_TOKEN_COOKIE)) {
+    response.cookies.set(variant.name, variant.value, variant.opts);
+  }
 }

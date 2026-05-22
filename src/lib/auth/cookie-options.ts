@@ -53,3 +53,19 @@ export function clearedCookie(name: string): { name: string; value: string; opts
     opts: sharedCookieOpts(0),
   };
 }
+
+/** Borra variantes host-only y con dominio (evita cookies huérfanas en prod). */
+export function clearedCookieVariants(name: string): Array<{
+  name: string;
+  value: string;
+  opts: CookieOpts;
+}> {
+  const primary = clearedCookie(name);
+  if (!cookieDomain) return [primary];
+
+  const { domain: _domain, ...hostOnlyOpts } = primary.opts;
+  return [
+    primary,
+    { name: primary.name, value: primary.value, opts: hostOnlyOpts },
+  ];
+}

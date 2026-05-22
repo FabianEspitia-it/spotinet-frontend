@@ -3,11 +3,11 @@ import {
   applySessionCookiesToResponse,
   clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
-import { REFRESH_TOKEN_COOKIE } from "@/lib/auth/constants";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
+import { getRefreshTokenFromRequest } from "@/lib/auth/read-request-cookies";
 
 export async function POST(req: NextRequest) {
-  const refresh = req.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
+  const refresh = getRefreshTokenFromRequest(req);
   if (!refresh) {
     return NextResponse.json({ error: "No hay sesión" }, { status: 401 });
   }
