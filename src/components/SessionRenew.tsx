@@ -30,8 +30,8 @@ export function SessionRenew() {
         });
         if (accessRes.ok) return;
 
-        const token = await refreshSessionFromClient();
-        if (!token) {
+        const ok = await refreshSessionFromClient();
+        if (!ok) {
           router.replace("/login");
         }
       } catch {

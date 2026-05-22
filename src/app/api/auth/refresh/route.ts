@@ -4,7 +4,6 @@ import {
   clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
 import { REFRESH_TOKEN_COOKIE } from "@/lib/auth/constants";
-import { normalizeAccessToken } from "@/lib/auth/is-access-token-valid";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
 
 export async function POST(req: NextRequest) {
@@ -22,10 +21,7 @@ export async function POST(req: NextRequest) {
     return res;
   }
 
-  const res = NextResponse.json({
-    ok: true,
-    access_token: normalizeAccessToken(session.accessToken),
-  });
+  const res = NextResponse.json({ ok: true });
   applySessionCookiesToResponse(res, session);
   return res;
 }
