@@ -21,6 +21,8 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth/logout/")) return true;
   if (pathname === "/api/auth/refresh") return true;
   if (pathname.startsWith("/api/auth/refresh/")) return true;
+  if (pathname === "/api/auth/access-token") return true;
+  if (pathname.startsWith("/api/auth/access-token/")) return true;
   return false;
 }
 
@@ -69,16 +71,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Páginas protegidas: el cliente renueva (GET access-token → POST refresh en Network).
+  if (
+    refreshToken &&
+    !isRefreshApiPath(pathname) &&
+    !isLoginPath(pathname) &&
+    !isPublicPagePath(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
   if (canRefresh && refreshToken) {
     const session = await fetchRefreshedSession(refreshToken);
 
-    if (session) {
-      if (isLoginPath(pathname)) {
-        return respondWithRefreshedSession(request, session, "/");
-      }
-      if (!isPublicPagePath(pathname)) {
-        return respondWithRefreshedSession(request, session);
-      }
+    if (session && isLoginPath(pathname)) {
+      return respondWithRefreshedSession(request, session, "/");
     }
 
     if (isLoginPath(pathname)) {
