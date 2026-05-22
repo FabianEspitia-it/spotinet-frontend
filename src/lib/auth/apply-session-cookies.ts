@@ -26,9 +26,19 @@ export function applySessionCookiesToResponse(
 export function applySessionCookiesToRequest(
   request: NextRequest,
   session: RefreshedSession
-): void {
+): Headers {
   request.cookies.set(ACCESS_TOKEN_COOKIE, session.accessToken);
   request.cookies.set(REFRESH_TOKEN_COOKIE, session.refreshToken);
+
+  const headers = new Headers(request.headers);
+  const cookieHeader = request.cookies
+    .getAll()
+    .map((cookie) => `${cookie.name}=${cookie.value}`)
+    .join("; ");
+  if (cookieHeader) {
+    headers.set("cookie", cookieHeader);
+  }
+  return headers;
 }
 
 export function clearSessionCookiesOnResponse(response: NextResponse): void {

@@ -46,14 +46,17 @@ function respondWithRefreshedSession(
   session: { accessToken: string; refreshToken: string },
   redirectTo?: string
 ): NextResponse {
-  const response = redirectTo
-    ? NextResponse.redirect(new URL(redirectTo, request.url))
-    : NextResponse.next();
-
-  applySessionCookiesToResponse(response, session);
-  if (!redirectTo) {
-    applySessionCookiesToRequest(request, session);
+  if (redirectTo) {
+    const response = NextResponse.redirect(new URL(redirectTo, request.url));
+    applySessionCookiesToResponse(response, session);
+    return response;
   }
+
+  const requestHeaders = applySessionCookiesToRequest(request, session);
+  const response = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+  applySessionCookiesToResponse(response, session);
   return response;
 }
 
@@ -62,7 +65,6 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   const refreshToken = getRefreshTokenFromRequest(request);
   const valid = isAccessTokenValid(token);
-  const canRefresh = Boolean(refreshToken) && !isRefreshApiPath(pathname);
 
   if (valid) {
     if (isLoginPath(pathname)) {
@@ -71,31 +73,29 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Páginas protegidas: el cliente renueva (access-token → refresh en Network).
-  if (
-    refreshToken &&
-    !isRefreshApiPath(pathname) &&
-    !isLoginPath(pathname) &&
-    !isPublicPagePath(pathname)
-  ) {
-    return NextResponse.next();
-  }
-
-  if (canRefresh && refreshToken) {
+  if (refreshToken && !isRefreshApiPath(pathname)) {
     const session = await fetchRefreshedSession(refreshToken);
 
-    if (session && isLoginPath(pathname)) {
-      return respondWithRefreshedSession(request, session, "/");
-    }
+    if (session) {
+      if (isLoginPath(pathname)) {
+        return respondWithRefreshedSession(request, session, "/");
+      }
 
-    if (isLoginPath(pathname)) {
-      const response = NextResponse.next();
-      clearSessionCookiesOnResponse(response);
+      const requestHeaders = applySessionCookiesToRequest(request, session);
+      const response = NextResponse.next({
+        request: { headers: requestHeaders },
+      });
+      applySessionCookiesToResponse(response, session);
       return response;
     }
   }
 
   if (isPublicPath(pathname)) {
+    if (isLoginPath(pathname) && refreshToken) {
+      const response = NextResponse.next();
+      clearSessionCookiesOnResponse(response);
+      return response;
+    }
     return NextResponse.next();
   }
 

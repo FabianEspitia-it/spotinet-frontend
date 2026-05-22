@@ -12,7 +12,7 @@ async function forward(
 ): Promise<NextResponse> {
   const access = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
   if (!access || !isAccessTokenValid(access)) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
   }
 
   const path = pathSegments.join("/");

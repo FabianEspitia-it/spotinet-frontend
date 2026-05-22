@@ -9,12 +9,12 @@ import { getRefreshTokenFromRequest } from "@/lib/auth/read-request-cookies";
 export async function POST(req: NextRequest) {
   const refresh = getRefreshTokenFromRequest(req);
   if (!refresh) {
-    return NextResponse.json({ error: "No hay sesión" }, { status: 401 });
+    return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
   }
 
   const session = await fetchRefreshedSession(refresh);
   if (!session) {
-    const res = NextResponse.json({ error: "Refresh inválido" }, { status: 401 });
+    const res = NextResponse.json({ detail: "No autenticado" }, { status: 401 });
     clearSessionCookiesOnResponse(res);
     return res;
   }
