@@ -5,12 +5,10 @@ import {
   applySessionCookiesToResponse,
   clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
-import {
-  ACCESS_TOKEN_COOKIE,
-  REFRESH_TOKEN_COOKIE,
-} from "@/lib/auth/constants";
+import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
 import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
 import { isPublicPagePath } from "@/lib/auth/public-paths";
+import { getRefreshTokenFromRequest } from "@/lib/auth/read-request-cookies";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
 
 function isPublicPath(pathname: string): boolean {
@@ -23,8 +21,6 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth/logout/")) return true;
   if (pathname === "/api/auth/refresh") return true;
   if (pathname.startsWith("/api/auth/refresh/")) return true;
-  if (pathname === "/api/auth/access-token") return true;
-  if (pathname.startsWith("/api/auth/access-token/")) return true;
   return false;
 }
 
@@ -39,25 +35,24 @@ function isRefreshApiPath(pathname: string): boolean {
   );
 }
 
+/** Evita doble POST /users/refresh: documento vs RSC/prefetch en la misma carga. */
+function isDocumentNavigation(request: NextRequest): boolean {
+  const { pathname } = request.nextUrl;
+  if (pathname.startsWith("/_next")) return false;
+  if (request.headers.get("Rsc") === "1") return false;
+  if (request.headers.get("Next-Router-Prefetch") === "1") return false;
+  if (request.headers.get("Purpose") === "prefetch") return false;
+
+  const dest = request.headers.get("Sec-Fetch-Dest");
+  if (dest && dest !== "document" && dest !== "iframe") return false;
+
+  return true;
+}
+
 function redirectToLogin(request: NextRequest): NextResponse {
-  const res = NextResponse.redirect(new URL("/login", request.url));
-  clearSessionCookiesOnResponse(res);
-  return res;
+  return NextResponse.redirect(new URL("/login", request.url));
 }
 
-async function tryRefreshSession(
-  request: NextRequest,
-  refreshToken: string
-) {
-  return fetchRefreshedSession(refreshToken, {
-    forwardCookieHeader: request.headers.get("cookie"),
-  });
-}
-
-/**
- * Renueva access+refresh en el servidor (Vercel → GCP). No aparece en Network del navegador
- * como petición separada; solo Set-Cookie en la respuesta del documento.
- */
 function respondWithRefreshedSession(
   request: NextRequest,
   session: { accessToken: string; refreshToken: string },
@@ -77,8 +72,10 @@ function respondWithRefreshedSession(
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
-  const refreshToken = request.cookies.get(REFRESH_TOKEN_COOKIE)?.value;
+  const refreshToken = getRefreshTokenFromRequest(request);
   const valid = isAccessTokenValid(token);
+  const canRefresh =
+    isDocumentNavigation(request) && refreshToken && !isRefreshApiPath(pathname);
 
   if (valid) {
     if (isLoginPath(pathname)) {
@@ -87,8 +84,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  if (refreshToken && !isRefreshApiPath(pathname)) {
-    const session = await tryRefreshSession(request, refreshToken);
+  if (canRefresh) {
+    const session = await fetchRefreshedSession(refreshToken);
 
     if (session) {
       if (isLoginPath(pathname)) {
@@ -119,6 +116,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|eot)$).*)",
+    "/((?!_next/static|_next/image|_next/data|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff2?|ttf|eot)$).*)",
   ],
 };

@@ -12,9 +12,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No hay sesión" }, { status: 401 });
   }
 
-  const session = await fetchRefreshedSession(refresh, {
-    forwardCookieHeader: req.headers.get("cookie"),
-  });
+  const session = await fetchRefreshedSession(refresh);
   if (!session) {
     const res = NextResponse.json({ error: "Refresh inválido" }, { status: 401 });
     clearSessionCookiesOnResponse(res);

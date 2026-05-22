@@ -8,32 +8,13 @@ export type RefreshedSession = {
   refreshToken: string;
 };
 
-export type RefreshAttemptOptions = {
-  forwardCookieHeader?: string | null;
-};
-
 const inflightByRefreshToken = new Map<
   string,
   Promise<RefreshedSession | null>
 >();
 
-function buildRefreshHeaders(
-  refreshToken: string,
-  forwardCookieHeader?: string | null
-): HeadersInit {
-  const cookie =
-    forwardCookieHeader?.trim() ||
-    `${REFRESH_TOKEN_COOKIE}=${refreshToken}`;
-
-  return {
-    Cookie: cookie,
-    "Content-Type": "application/json",
-  };
-}
-
 async function fetchRefreshedSessionOnce(
-  rawRefreshToken: string,
-  options?: RefreshAttemptOptions
+  rawRefreshToken: string
 ): Promise<RefreshedSession | null> {
   const refreshToken = normalizeRefreshToken(rawRefreshToken);
   if (!refreshToken) return null;
@@ -41,10 +22,10 @@ async function fetchRefreshedSessionOnce(
   try {
     const res = await fetchBackendApi("/users/refresh", {
       method: "POST",
-      headers: buildRefreshHeaders(
-        refreshToken,
-        options?.forwardCookieHeader
-      ),
+      headers: {
+        Cookie: `${REFRESH_TOKEN_COOKIE}=${refreshToken}`,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
@@ -65,15 +46,15 @@ async function fetchRefreshedSessionOnce(
   }
 }
 
+/** Renueva la sesión con POST /users/refresh (solo envía refresh_token, sin otras cookies). */
 export async function fetchRefreshedSession(
-  refreshToken: string,
-  options?: RefreshAttemptOptions
+  refreshToken: string
 ): Promise<RefreshedSession | null> {
   const key = normalizeRefreshToken(refreshToken);
   const existing = inflightByRefreshToken.get(key);
   if (existing) return existing;
 
-  const promise = fetchRefreshedSessionOnce(refreshToken, options).finally(() => {
+  const promise = fetchRefreshedSessionOnce(refreshToken).finally(() => {
     if (inflightByRefreshToken.get(key) === promise) {
       inflightByRefreshToken.delete(key);
     }

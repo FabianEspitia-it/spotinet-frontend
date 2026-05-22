@@ -14,6 +14,8 @@ export function applySessionCookiesToResponse(
   response: NextResponse,
   session: RefreshedSession
 ): void {
+  clearSessionCookiesOnResponse(response);
+
   const access = accessTokenCookie(session.accessToken);
   const refresh = refreshTokenCookie(session.refreshToken);
   response.cookies.set(access.name, access.value, access.opts);
