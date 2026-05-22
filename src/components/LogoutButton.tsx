@@ -1,5 +1,6 @@
 "use client";
 
+import { clearCachedAccessToken } from "@/lib/auth/refresh-client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -11,6 +12,7 @@ export default function LogoutButton() {
     setBusy(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
+      clearCachedAccessToken();
       router.replace("/login");
       router.refresh();
     } finally {

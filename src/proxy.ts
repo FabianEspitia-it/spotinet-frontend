@@ -21,6 +21,8 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/api/auth/logout/")) return true;
   if (pathname === "/api/auth/refresh") return true;
   if (pathname.startsWith("/api/auth/refresh/")) return true;
+  if (pathname === "/api/auth/access-token") return true;
+  if (pathname.startsWith("/api/auth/access-token/")) return true;
   return false;
 }
 
@@ -39,7 +41,6 @@ function redirectToLogin(request: NextRequest): NextResponse {
   return NextResponse.redirect(new URL("/login", request.url));
 }
 
-/** Renueva en el servidor (Vercel → GCP); solo Set-Cookie en el documento, sin fetch en Network. */
 function respondWithRefreshedSession(
   request: NextRequest,
   session: { accessToken: string; refreshToken: string },
@@ -70,16 +71,21 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Páginas protegidas: el cliente renueva (access-token → refresh en Network).
+  if (
+    refreshToken &&
+    !isRefreshApiPath(pathname) &&
+    !isLoginPath(pathname) &&
+    !isPublicPagePath(pathname)
+  ) {
+    return NextResponse.next();
+  }
+
   if (canRefresh && refreshToken) {
     const session = await fetchRefreshedSession(refreshToken);
 
-    if (session) {
-      if (isLoginPath(pathname)) {
-        return respondWithRefreshedSession(request, session, "/");
-      }
-      if (!isPublicPagePath(pathname)) {
-        return respondWithRefreshedSession(request, session);
-      }
+    if (session && isLoginPath(pathname)) {
+      return respondWithRefreshedSession(request, session, "/");
     }
 
     if (isLoginPath(pathname)) {
