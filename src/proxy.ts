@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // Access expirado pero hay refresh_token → renovar en el servidor (7 días).
-  // En /login lo hace SessionRestore vía /api/auth/access-token (evita doble refresh con rotación).
+  // En /login lo hace SessionRestore vía POST /api/auth/refresh (evita doble refresh con rotación).
   const isLoginPath =
     pathname === "/login" || pathname.startsWith("/login/");
   if (

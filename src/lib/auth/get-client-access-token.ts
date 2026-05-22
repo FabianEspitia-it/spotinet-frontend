@@ -1,6 +1,6 @@
 /**
- * Obtiene el access token desde la cookie httpOnly vía el BFF de Next.
- * Si expiró, intenta renovar con POST /api/auth/refresh.
+ * Lee access desde cookie (GET /api/auth/access-token).
+ * Si falta o expiró, renueva con POST /api/auth/refresh (setea cookies) y vuelve a leer.
  */
 export async function getClientAccessToken(): Promise<string | null> {
   const token = await fetchAccessToken();

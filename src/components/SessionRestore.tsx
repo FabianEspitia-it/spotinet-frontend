@@ -4,8 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 /**
- * Si falta access pero hay refresh, pide token al BFF sin repetir POST /users/refresh
- * cuando el access aún es válido (evita invalidar refresh por rotación en prod).
+ * Si falta access válido, POST /api/auth/refresh setea access_token (y refresh) en cookies.
  */
 export function SessionRestore() {
   const router = useRouter();
@@ -18,7 +17,14 @@ export function SessionRestore() {
 
     void (async () => {
       try {
-        const res = await fetch("/api/auth/access-token", {
+        const hasAccess = await fetch("/api/auth/access-token", {
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (hasAccess.ok) return;
+
+        const res = await fetch("/api/auth/refresh", {
+          method: "POST",
           credentials: "include",
           cache: "no-store",
         });
