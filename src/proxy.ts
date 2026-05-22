@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {
-  applySessionCookiesToRequest,
   applySessionCookiesToResponse,
   clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
@@ -94,26 +93,13 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
+  // Rutas protegidas con refresh: dejar pasar; SessionRenew renueva en el cliente.
   if (
     refreshToken &&
-    !isRefreshApiPath(pathname) &&
-    !isPublicPagePath(pathname)
+    !isPublicPagePath(pathname) &&
+    !isLoginPath(pathname)
   ) {
-    const session = await tryRefreshSession(request, refreshToken);
-
-    if (session) {
-      if (
-        isDashboardPath(pathname) &&
-        !isAdminAccessToken(session.accessToken)
-      ) {
-        return dashboardAccessDeniedResponse(request);
-      }
-
-      const response = NextResponse.next();
-      applySessionCookiesToResponse(response, session);
-      applySessionCookiesToRequest(request, session);
-      return response;
-    }
+    return NextResponse.next();
   }
 
   if (isPublicPath(pathname)) {
