@@ -1,3 +1,6 @@
+import { getClientAccessToken } from "@/lib/auth/get-client-access-token";
+import { getBackendBaseUrl } from "@/lib/env";
+
 export type StreamingResult<T> =
   | { ok: true; data: T }
   | { ok: false; status: number };
@@ -5,20 +8,34 @@ export type StreamingResult<T> =
 export type CodeResponse = { code: string };
 export type LinkResponse = { link: string };
 
-function buildUpstreamUrl(path: string): string {
-  const normalized = path.startsWith("/") ? path.slice(1) : path;
-  return `/api/upstream/${normalized}`;
+function buildBackendUrl(path: string): string {
+  const normalized = path.startsWith("/") ? path : `/${path}`;
+  return `${getBackendBaseUrl()}${normalized}`;
+}
+
+async function authHeaders(): Promise<Headers | null> {
+  const access = await getClientAccessToken();
+  if (!access) return null;
+
+  const headers = new Headers();
+  headers.set("Content-Type", "application/json");
+  headers.set("Authorization", `Bearer ${access}`);
+  return headers;
 }
 
 async function postJson<T>(
   path: string,
   body: unknown
 ): Promise<StreamingResult<T>> {
+  const headers = await authHeaders();
+  if (!headers) {
+    return { ok: false, status: 401 };
+  }
+
   try {
-    const res = await fetch(buildUpstreamUrl(path), {
+    const res = await fetch(buildBackendUrl(path), {
       method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -36,10 +53,15 @@ async function postJson<T>(
 }
 
 async function getJson<T>(path: string): Promise<StreamingResult<T>> {
+  const headers = await authHeaders();
+  if (!headers) {
+    return { ok: false, status: 401 };
+  }
+
   try {
-    const res = await fetch(buildUpstreamUrl(path), {
+    const res = await fetch(buildBackendUrl(path), {
       method: "GET",
-      credentials: "include",
+      headers,
       cache: "no-store",
     });
 
