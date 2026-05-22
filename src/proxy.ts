@@ -8,11 +8,8 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "@/lib/auth/constants";
-import {
-  isAccessTokenValid,
-  isAdminAccessToken,
-} from "@/lib/auth/is-access-token-valid";
-import { isDashboardPath, isPublicPagePath } from "@/lib/auth/public-paths";
+import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
+import { isPublicPagePath } from "@/lib/auth/public-paths";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
 
 function isPublicPath(pathname: string): boolean {
@@ -41,12 +38,6 @@ function isRefreshApiPath(pathname: string): boolean {
   );
 }
 
-function dashboardAccessDeniedResponse(
-  request: NextRequest
-): NextResponse {
-  return NextResponse.redirect(new URL("/", request.url));
-}
-
 function redirectToLogin(request: NextRequest): NextResponse {
   const res = NextResponse.redirect(new URL("/login", request.url));
   clearSessionCookiesOnResponse(res);
@@ -71,9 +62,6 @@ export async function proxy(request: NextRequest) {
   if (valid) {
     if (isLoginPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
-    }
-    if (isDashboardPath(pathname) && !isAdminAccessToken(token)) {
-      return dashboardAccessDeniedResponse(request);
     }
     return NextResponse.next();
   }
