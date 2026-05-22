@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import {
   applySessionCookiesToRequest,
   applySessionCookiesToResponse,
+  clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
 import {
   ACCESS_TOKEN_COOKIE,
@@ -30,6 +31,10 @@ function isPublicPath(pathname: string): boolean {
   return false;
 }
 
+function isLoginPath(pathname: string): boolean {
+  return pathname === "/login" || pathname.startsWith("/login/");
+}
+
 function isRefreshApiPath(pathname: string): boolean {
   return (
     pathname === "/api/auth/refresh" ||
@@ -43,6 +48,21 @@ function dashboardAccessDeniedResponse(
   return NextResponse.redirect(new URL("/", request.url));
 }
 
+function redirectToLogin(request: NextRequest): NextResponse {
+  const res = NextResponse.redirect(new URL("/login", request.url));
+  clearSessionCookiesOnResponse(res);
+  return res;
+}
+
+async function tryRefreshSession(
+  request: NextRequest,
+  refreshToken: string
+) {
+  return fetchRefreshedSession(refreshToken, {
+    forwardCookieHeader: request.headers.get("cookie"),
+  });
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
@@ -50,7 +70,7 @@ export async function proxy(request: NextRequest) {
   const valid = isAccessTokenValid(token);
 
   if (valid) {
-    if (pathname === "/login" || pathname.startsWith("/login/")) {
+    if (isLoginPath(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
     }
     if (isDashboardPath(pathname) && !isAdminAccessToken(token)) {
@@ -59,22 +79,29 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Renovar en rutas protegidas si hay refresh_token (login es público → SessionRestore en cliente).
+  // /login: renovar en el servidor (sin POST /api/auth/refresh desde el cliente).
+  if (refreshToken && isLoginPath(pathname) && !isRefreshApiPath(pathname)) {
+    const session = await tryRefreshSession(request, refreshToken);
+
+    if (session) {
+      const redirect = NextResponse.redirect(new URL("/", request.url));
+      applySessionCookiesToResponse(redirect, session);
+      return redirect;
+    }
+
+    const response = NextResponse.next();
+    clearSessionCookiesOnResponse(response);
+    return response;
+  }
+
   if (
     refreshToken &&
     !isRefreshApiPath(pathname) &&
     !isPublicPagePath(pathname)
   ) {
-    const session = await fetchRefreshedSession(refreshToken);
+    const session = await tryRefreshSession(request, refreshToken);
 
     if (session) {
-      if (pathname === "/login" || pathname.startsWith("/login/")) {
-        const redirect = NextResponse.redirect(new URL("/", request.url));
-        applySessionCookiesToResponse(redirect, session);
-        applySessionCookiesToRequest(request, session);
-        return redirect;
-      }
-
       if (
         isDashboardPath(pathname) &&
         !isAdminAccessToken(session.accessToken)
@@ -97,7 +124,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.json({ detail: "No autenticado" }, { status: 401 });
   }
 
-  return NextResponse.redirect(new URL("/login", request.url));
+  return redirectToLogin(request);
 }
 
 export const config = {

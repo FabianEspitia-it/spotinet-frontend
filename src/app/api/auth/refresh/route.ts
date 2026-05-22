@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { applySessionCookiesToResponse } from "@/lib/auth/apply-session-cookies";
+import {
+  applySessionCookiesToResponse,
+  clearSessionCookiesOnResponse,
+} from "@/lib/auth/apply-session-cookies";
 import { REFRESH_TOKEN_COOKIE } from "@/lib/auth/constants";
 import { normalizeAccessToken } from "@/lib/auth/is-access-token-valid";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
@@ -14,7 +17,9 @@ export async function POST(req: NextRequest) {
     forwardCookieHeader: req.headers.get("cookie"),
   });
   if (!session) {
-    return NextResponse.json({ error: "Refresh inválido" }, { status: 401 });
+    const res = NextResponse.json({ error: "Refresh inválido" }, { status: 401 });
+    clearSessionCookiesOnResponse(res);
+    return res;
   }
 
   const res = NextResponse.json({

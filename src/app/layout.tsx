@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
-import { SessionRestore } from "@/components/SessionRestore";
 import { ToastContainer } from "react-toastify";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import "react-toastify/dist/ReactToastify.css";
@@ -25,7 +24,6 @@ export default async function RootLayout({
   return (
     <html lang="es">
       <body className={poppins.className}>
-        <SessionRestore />
         <ToastContainer />
         {children}
         <GoogleAnalytics gaId="G-KMP3PXYE98" />

@@ -3,7 +3,11 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "./constants";
-import { accessTokenCookie, refreshTokenCookie } from "./cookie-options";
+import {
+  accessTokenCookie,
+  clearedCookie,
+  refreshTokenCookie,
+} from "./cookie-options";
 import type { RefreshedSession } from "./refresh-session";
 
 export function applySessionCookiesToResponse(
@@ -23,4 +27,11 @@ export function applySessionCookiesToRequest(
 ): void {
   request.cookies.set(ACCESS_TOKEN_COOKIE, session.accessToken);
   request.cookies.set(REFRESH_TOKEN_COOKIE, session.refreshToken);
+}
+
+export function clearSessionCookiesOnResponse(response: NextResponse): void {
+  const a = clearedCookie(ACCESS_TOKEN_COOKIE);
+  const r = clearedCookie(REFRESH_TOKEN_COOKIE);
+  response.cookies.set(a.name, a.value, a.opts);
+  response.cookies.set(r.name, r.value, r.opts);
 }

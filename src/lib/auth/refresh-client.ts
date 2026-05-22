@@ -19,7 +19,10 @@ export function refreshSessionFromClient(): Promise<string | null> {
     cache: "no-store",
   })
     .then(async (res) => {
-      if (!res.ok) return null;
+      if (!res.ok) {
+        cachedAccess = null;
+        return null;
+      }
       try {
         const data = (await res.json()) as { access_token?: string };
         const token = data.access_token?.trim() || null;
