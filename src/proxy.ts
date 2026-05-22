@@ -8,8 +8,11 @@ import {
   ACCESS_TOKEN_COOKIE,
   REFRESH_TOKEN_COOKIE,
 } from "@/lib/auth/constants";
-import { isAccessTokenValid } from "@/lib/auth/is-access-token-valid";
-import { isPublicPagePath } from "@/lib/auth/public-paths";
+import {
+  isAccessTokenValid,
+  isAdminAccessToken,
+} from "@/lib/auth/is-access-token-valid";
+import { isDashboardPath, isPublicPagePath } from "@/lib/auth/public-paths";
 import { fetchRefreshedSession } from "@/lib/auth/refresh-session";
 
 function isPublicPath(pathname: string): boolean {
@@ -34,6 +37,12 @@ function isRefreshApiPath(pathname: string): boolean {
   );
 }
 
+function dashboardAccessDeniedResponse(
+  request: NextRequest
+): NextResponse {
+  return NextResponse.redirect(new URL("/", request.url));
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
@@ -44,10 +53,13 @@ export async function proxy(request: NextRequest) {
     if (pathname === "/login" || pathname.startsWith("/login/")) {
       return NextResponse.redirect(new URL("/", request.url));
     }
+    if (isDashboardPath(pathname) && !isAdminAccessToken(token)) {
+      return dashboardAccessDeniedResponse(request);
+    }
     return NextResponse.next();
   }
 
-  // Renovar solo en rutas protegidas. Las públicas usan SessionRestore (un solo POST /api/auth/refresh).
+  // Renovar en rutas protegidas si hay refresh_token (login es público → SessionRestore en cliente).
   if (
     refreshToken &&
     !isRefreshApiPath(pathname) &&
@@ -61,6 +73,13 @@ export async function proxy(request: NextRequest) {
         applySessionCookiesToResponse(redirect, session);
         applySessionCookiesToRequest(request, session);
         return redirect;
+      }
+
+      if (
+        isDashboardPath(pathname) &&
+        !isAdminAccessToken(session.accessToken)
+      ) {
+        return dashboardAccessDeniedResponse(request);
       }
 
       const response = NextResponse.next();

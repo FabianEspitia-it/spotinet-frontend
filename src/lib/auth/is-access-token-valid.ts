@@ -1,5 +1,7 @@
 /** Decodifica el payload JWT sin depender de `Buffer` (Edge/Node). */
-function decodeJwtPayload(token: string): { exp?: number } | null {
+type AccessJwtPayload = { exp?: number; is_admin?: boolean };
+
+function decodeJwtPayload(token: string): AccessJwtPayload | null {
   const parts = token.split(".");
   if (parts.length !== 3 || !parts[1]) return null;
   try {
@@ -12,7 +14,7 @@ function decodeJwtPayload(token: string): { exp?: number } | null {
       bytes[i] = binary.charCodeAt(i);
     }
     const json = new TextDecoder().decode(bytes);
-    return JSON.parse(json) as { exp?: number };
+    return JSON.parse(json) as AccessJwtPayload;
   } catch {
     return null;
   }
@@ -28,4 +30,10 @@ export function isAccessTokenValid(token: string | undefined): boolean {
   if (!payload || typeof payload.exp !== "number") return false;
   const skewMs = 5000;
   return payload.exp * 1000 > Date.now() - skewMs;
+}
+
+export function isAdminAccessToken(token: string | undefined): boolean {
+  if (!isAccessTokenValid(token)) return false;
+  const payload = decodeJwtPayload(normalizeAccessToken(token!));
+  return payload?.is_admin === true;
 }

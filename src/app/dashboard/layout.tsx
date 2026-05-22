@@ -1,8 +1,12 @@
 import type { ReactNode } from "react";
 import { cookies } from "next/headers";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import DashboardShell from "./_components/DashboardShell";
 import { ACCESS_TOKEN_COOKIE } from "@/lib/auth/constants";
+import {
+  isAccessTokenValid,
+  isAdminAccessToken,
+} from "@/lib/auth/is-access-token-valid";
 import { fetchBackendApi } from "@/server/fetch-backend-api";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +26,11 @@ async function ensureAdmin() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get(ACCESS_TOKEN_COOKIE)?.value;
 
-  if (!accessToken) {
+  if (!accessToken || !isAccessTokenValid(accessToken)) {
+    redirect("/login");
+  }
+
+  if (!isAdminAccessToken(accessToken)) {
     notFound();
   }
 
@@ -32,7 +40,7 @@ async function ensureAdmin() {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   } catch {
-    return;
+    redirect("/login");
   }
 
   if (res.status === 403 || (await isAdminMessage(res))) {
