@@ -1,6 +1,6 @@
 "use client";
 
-import { refreshSessionFromClient } from "@/lib/auth/refresh-client";
+import { ensureClientSession } from "@/lib/auth/session-client";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -24,13 +24,7 @@ export function SessionRenew() {
 
     void (async () => {
       try {
-        const accessRes = await fetch("/api/auth/access-token", {
-          credentials: "include",
-          cache: "no-store",
-        });
-        if (accessRes.ok) return;
-
-        const ok = await refreshSessionFromClient();
+        const ok = await ensureClientSession();
         if (!ok) {
           router.replace("/login");
         }
