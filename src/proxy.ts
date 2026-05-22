@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import {
+  applySessionCookiesToRequest,
   applySessionCookiesToResponse,
   clearSessionCookiesOnResponse,
 } from "@/lib/auth/apply-session-cookies";
@@ -53,6 +54,26 @@ async function tryRefreshSession(
   });
 }
 
+/**
+ * Renueva access+refresh en el servidor (Vercel → GCP). No aparece en Network del navegador
+ * como petición separada; solo Set-Cookie en la respuesta del documento.
+ */
+function respondWithRefreshedSession(
+  request: NextRequest,
+  session: { accessToken: string; refreshToken: string },
+  redirectTo?: string
+): NextResponse {
+  const response = redirectTo
+    ? NextResponse.redirect(new URL(redirectTo, request.url))
+    : NextResponse.next();
+
+  applySessionCookiesToResponse(response, session);
+  if (!redirectTo) {
+    applySessionCookiesToRequest(request, session);
+  }
+  return response;
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(ACCESS_TOKEN_COOKIE)?.value;
@@ -66,28 +87,23 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // /login: renovar en el servidor (sin POST /api/auth/refresh desde el cliente).
-  if (refreshToken && isLoginPath(pathname) && !isRefreshApiPath(pathname)) {
+  if (refreshToken && !isRefreshApiPath(pathname)) {
     const session = await tryRefreshSession(request, refreshToken);
 
     if (session) {
-      const redirect = NextResponse.redirect(new URL("/", request.url));
-      applySessionCookiesToResponse(redirect, session);
-      return redirect;
+      if (isLoginPath(pathname)) {
+        return respondWithRefreshedSession(request, session, "/");
+      }
+      if (!isPublicPagePath(pathname)) {
+        return respondWithRefreshedSession(request, session);
+      }
     }
 
-    const response = NextResponse.next();
-    clearSessionCookiesOnResponse(response);
-    return response;
-  }
-
-  // Rutas protegidas con refresh: dejar pasar; SessionRenew renueva en el cliente.
-  if (
-    refreshToken &&
-    !isPublicPagePath(pathname) &&
-    !isLoginPath(pathname)
-  ) {
-    return NextResponse.next();
+    if (isLoginPath(pathname)) {
+      const response = NextResponse.next();
+      clearSessionCookiesOnResponse(response);
+      return response;
+    }
   }
 
   if (isPublicPath(pathname)) {
