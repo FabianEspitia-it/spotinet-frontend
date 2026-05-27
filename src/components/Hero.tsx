@@ -23,7 +23,7 @@ export default function Hero() {
     },
 
     {
-      label: "Código de verificación",
+      label: "Código para cerrar dispositivos",
       href: "/netflix_verification_code",
       img: "/images/Net.svg",
       imgHover: "/images/Net2.svg",
