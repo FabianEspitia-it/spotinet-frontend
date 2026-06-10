@@ -1,16 +1,27 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 
-type User = {
+type Account = {
   id: string;
   email: string;
 };
 
+type User = {
+  id: string;
+  email: string;
+  accounts?: Account[];
+};
+
 type ListResponse = {
+  total: number;
+  skip: number;
+  limit: number;
   users?: User[];
 };
+
+const PAGE_SIZE = 25;
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -28,6 +39,8 @@ async function readError(res: Response): Promise<string> {
 
 export default function UsersClient() {
   const [users, setUsers] = useState<User[]>([]);
+  const [total, setTotal] = useState(0);
+  const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -41,49 +54,87 @@ export default function UsersClient() {
   const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/upstream/users", {
-          method: "GET",
-          cache: "no-store",
-        });
-        if (cancelled) return;
-        if (!res.ok) {
-          const msg = await readError(res);
-          if (cancelled) return;
-          setErrorMsg(msg);
-          setUsers([]);
-          return;
-        }
-        const data = (await res.json()) as ListResponse;
-        if (cancelled) return;
-        setUsers(Array.isArray(data?.users) ? data.users : []);
-        setErrorMsg(null);
-      } catch {
-        if (cancelled) return;
-        setErrorMsg("No se pudo conectar con el servidor");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [reloadToken]);
+  const [unlinkTarget, setUnlinkTarget] = useState<User | null>(null);
+  const [unlinkQuery, setUnlinkQuery] = useState("");
+  const [selectedUnlinkIds, setSelectedUnlinkIds] = useState<string[]>([]);
+  const [unlinking, setUnlinking] = useState(false);
 
-  function reload() {
+  const fetchUsers = useCallback(
+    async (currentSkip: number, signal: AbortSignal) => {
+      const params = new URLSearchParams();
+      params.set("skip", String(currentSkip));
+      params.set("limit", String(PAGE_SIZE));
+
+      const res = await fetch(`/api/upstream/users?${params.toString()}`, {
+        method: "GET",
+        cache: "no-store",
+        signal,
+      });
+
+      if (!res.ok) {
+        const msg = await readError(res);
+        throw new Error(msg);
+      }
+
+      return (await res.json()) as ListResponse;
+    },
+    []
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setErrorMsg(null);
+
+    (async () => {
+      try {
+        const data = await fetchUsers(skip, controller.signal);
+        setUsers(Array.isArray(data?.users) ? data.users : []);
+        setTotal(typeof data?.total === "number" ? data.total : 0);
+      } catch (err) {
+        if (controller.signal.aborted) return;
+        const message =
+          err instanceof Error ? err.message : "No se pudo conectar con el servidor";
+        setErrorMsg(message);
+        setUsers([]);
+        setTotal(0);
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
+    })();
+
+    return () => controller.abort();
+  }, [skip, reloadToken, fetchUsers]);
+
+  function reload() {
     setReloadToken((k) => k + 1);
   }
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return users;
-    return users.filter((u) => u.email.toLowerCase().includes(q));
+    return users.filter(
+      (u) =>
+        u.email.toLowerCase().includes(q) ||
+        u.accounts?.some((a) => a.email.toLowerCase().includes(q))
+    );
   }, [users, query]);
+
+  const currentPage = Math.floor(skip / PAGE_SIZE) + 1;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const rangeStart = total === 0 ? 0 : skip + 1;
+  const rangeEnd = Math.min(skip + PAGE_SIZE, total);
+  const canPrev = skip > 0 && !loading;
+  const canNext = skip + PAGE_SIZE < total && !loading;
+
+  function goPrev() {
+    if (!canPrev) return;
+    setSkip(Math.max(0, skip - PAGE_SIZE));
+  }
+  function goNext() {
+    if (!canNext) return;
+    setSkip(skip + PAGE_SIZE);
+  }
 
   function openCreate() {
     setCreateEmail("");
@@ -139,6 +190,70 @@ export default function UsersClient() {
       toast.error("Error de conexión");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  function openUnlink(user: User) {
+    setUnlinkTarget(user);
+    setUnlinkQuery("");
+    setSelectedUnlinkIds([]);
+  }
+
+  const filteredUnlinkAccounts = useMemo(() => {
+    if (!unlinkTarget?.accounts) return [];
+    const q = unlinkQuery.trim().toLowerCase();
+    if (!q) return unlinkTarget.accounts;
+    return unlinkTarget.accounts.filter((a) =>
+      a.email.toLowerCase().includes(q)
+    );
+  }, [unlinkTarget, unlinkQuery]);
+
+  function toggleUnlink(id: string) {
+    setSelectedUnlinkIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  async function handleUnlink(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!unlinkTarget) return;
+    if (selectedUnlinkIds.length === 0) {
+      toast.error("Selecciona al menos una cuenta");
+      return;
+    }
+
+    setUnlinking(true);
+    try {
+      const res = await fetch("/api/upstream/accounts/unlink-user", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: unlinkTarget.id,
+          account_ids: selectedUnlinkIds,
+        }),
+      });
+      if (!res.ok) {
+        toast.error(await readError(res));
+        return;
+      }
+      toast.success("Cuentas desvinculadas correctamente");
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === unlinkTarget.id
+            ? {
+                ...u,
+                accounts: u.accounts?.filter(
+                  (a) => !selectedUnlinkIds.includes(a.id)
+                ),
+              }
+            : u
+        )
+      );
+      setUnlinkTarget(null);
+    } catch {
+      toast.error("Error de conexión");
+    } finally {
+      setUnlinking(false);
     }
   }
 
@@ -203,25 +318,74 @@ export default function UsersClient() {
               className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
             />
           </div>
-          <span className="text-xs text-white/60">
-            {filtered.length} de {users.length}
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-white/60">
+              {total === 0 ? "Sin resultados" : `Mostrando ${rangeStart}–${rangeEnd} de ${total.toLocaleString("es-CO")}`}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={goPrev}
+                disabled={!canPrev}
+                className="inline-flex items-center gap-1 rounded-lg border border-secondary_blue/30 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-secondary_blue/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15.75 19.5 8.25 12l7.5-7.5"
+                  />
+                </svg>
+                Anterior
+              </button>
+              <span className="text-xs text-white/50">
+                {currentPage} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={goNext}
+                disabled={!canNext}
+                className="inline-flex items-center gap-1 rounded-lg border border-secondary_blue/30 px-3 py-1.5 text-xs font-medium text-white/80 hover:bg-secondary_blue/10 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Siguiente
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[420px] text-left text-sm">
+          <table className="w-full min-w-[560px] text-left text-sm">
             <thead className="bg-secondary_blue/5 text-xs uppercase tracking-wide text-secondary_blue/80">
               <tr>
-                <th className="px-4 py-3 font-semibold">Correo</th>
-                <th className="w-32 px-4 py-3 text-right font-semibold">
+                <th className="px-4 py-3 font-semibold">Usuario / Cuentas vinculadas</th>
+                <th className="w-56 px-4 py-3 text-right font-semibold">
                   Acciones
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-secondary_blue/10">
-              {loading && users.length === 0 && (
-                <SkeletonRows />
-              )}
+              {loading && users.length === 0 && <SkeletonRows />}
 
               {!loading && errorMsg && (
                 <tr>
@@ -259,16 +423,65 @@ export default function UsersClient() {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary_blue/15 text-sm font-semibold uppercase text-secondary_blue">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary_blue/15 text-sm font-semibold uppercase text-secondary_blue">
                           {user.email?.[0] ?? "?"}
                         </div>
-                        <span className="font-medium text-white">
-                          {user.email}
-                        </span>
+                        <div className="min-w-0">
+                          <span className="block font-medium text-white">
+                            {user.email}
+                          </span>
+                          {user.accounts && user.accounts.length > 0 && (
+                            <ul className="mt-1 space-y-0.5">
+                              {user.accounts.map((acc) => (
+                                <li
+                                  key={acc.id}
+                                  className="flex items-center gap-1.5 text-xs text-secondary_blue/80"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 16 16"
+                                    fill="currentColor"
+                                    className="h-3 w-3 shrink-0 opacity-60"
+                                  >
+                                    <path
+                                      fillRule="evenodd"
+                                      d="M6.22 4.22a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 0 1 0 1.06l-3.25 3.25a.75.75 0 0 1-1.06-1.06L8.94 8 6.22 5.28a.75.75 0 0 1 0-1.06Z"
+                                      clipRule="evenodd"
+                                    />
+                                  </svg>
+                                  {acc.email}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex justify-end">
+                      <div className="flex items-center justify-end gap-2">
+                        {user.accounts && user.accounts.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => openUnlink(user)}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-secondary_blue/30 px-3 py-1.5 text-xs font-medium text-secondary_blue transition hover:bg-secondary_blue/10"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              strokeWidth={1.8}
+                              stroke="currentColor"
+                              className="h-4 w-4"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M13.181 8.68a4.503 4.503 0 0 1 1.903 6.405m-9.768-2.782L3.56 14.06a4.5 4.5 0 0 0 6.364 6.365l3.129-3.129m5.614-5.615 1.757-1.757a4.5 4.5 0 0 0-6.364-6.365l-4.5 4.5c-.258.26-.479.541-.661.84m1.903 1.903L9.75 15"
+                              />
+                            </svg>
+                            Desvincular cuentas
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => setConfirmDelete(user)}
@@ -299,6 +512,7 @@ export default function UsersClient() {
         </div>
       </div>
 
+      {/* Modal: Crear usuario */}
       {createOpen && (
         <Modal
           onClose={() => (!creating ? setCreateOpen(false) : undefined)}
@@ -355,11 +569,10 @@ export default function UsersClient() {
         </Modal>
       )}
 
+      {/* Modal: Eliminar usuario */}
       {confirmDelete && (
         <Modal
-          onClose={() =>
-            !deletingId ? setConfirmDelete(null) : undefined
-          }
+          onClose={() => (!deletingId ? setConfirmDelete(null) : undefined)}
           title="Eliminar usuario"
         >
           <p className="text-sm text-white/80">
@@ -389,6 +602,101 @@ export default function UsersClient() {
           </div>
         </Modal>
       )}
+
+      {/* Modal: Desvincular cuentas */}
+      {unlinkTarget && (
+        <Modal
+          onClose={() => (!unlinking ? setUnlinkTarget(null) : undefined)}
+          title="Desvincular cuentas"
+        >
+          <form onSubmit={handleUnlink} className="space-y-4">
+            <p className="text-sm text-white/70">
+              Usuario:{" "}
+              <span className="font-semibold text-white">
+                {unlinkTarget.email}
+              </span>
+            </p>
+
+            <div>
+              <span className="mb-2 block text-xs font-medium text-secondary_blue">
+                Cuentas vinculadas
+              </span>
+              <div className="relative mb-2">
+                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-secondary_blue/60">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.8}
+                    stroke="currentColor"
+                    className="h-4 w-4"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                    />
+                  </svg>
+                </span>
+                <input
+                  type="search"
+                  value={unlinkQuery}
+                  onChange={(e) => setUnlinkQuery(e.target.value)}
+                  placeholder="Buscar cuentas..."
+                  className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+                />
+              </div>
+
+              {filteredUnlinkAccounts.length === 0 ? (
+                <p className="py-4 text-center text-sm text-white/40">
+                  No hay cuentas vinculadas.
+                </p>
+              ) : (
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-secondary_blue/20 p-2">
+                  {filteredUnlinkAccounts.map((acc) => (
+                    <label
+                      key={acc.id}
+                      className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm text-white transition hover:bg-secondary_blue/10"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedUnlinkIds.includes(acc.id)}
+                        onChange={() => toggleUnlink(acc.id)}
+                        className="h-4 w-4 rounded border-secondary_blue/30 bg-principal_blue accent-secondary_blue"
+                      />
+                      {acc.email}
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {selectedUnlinkIds.length > 0 && (
+                <p className="mt-1 text-xs text-white/50">
+                  {selectedUnlinkIds.length} cuenta(s) seleccionada(s)
+                </p>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setUnlinkTarget(null)}
+                disabled={unlinking}
+                className="rounded-lg border border-secondary_blue/30 px-4 py-2 text-sm font-medium text-white/80 hover:bg-secondary_blue/10 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={unlinking || selectedUnlinkIds.length === 0}
+                className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-60"
+              >
+                {unlinking ? "Desvinculando…" : "Desvincular"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   );
 }
@@ -401,11 +709,14 @@ function SkeletonRows() {
           <td className="px-4 py-4">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 animate-pulse rounded-full bg-secondary_blue/10" />
-              <div className="h-3 w-40 animate-pulse rounded bg-secondary_blue/10" />
+              <div className="space-y-1.5">
+                <div className="h-3 w-40 animate-pulse rounded bg-secondary_blue/10" />
+                <div className="h-2.5 w-32 animate-pulse rounded bg-secondary_blue/10" />
+              </div>
             </div>
           </td>
           <td className="px-4 py-4">
-            <div className="ml-auto h-7 w-20 animate-pulse rounded bg-secondary_blue/10" />
+            <div className="ml-auto h-7 w-36 animate-pulse rounded bg-secondary_blue/10" />
           </td>
         </tr>
       ))}
