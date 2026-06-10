@@ -59,11 +59,24 @@ export default function UsersClient() {
   const [selectedUnlinkIds, setSelectedUnlinkIds] = useState<string[]>([]);
   const [unlinking, setUnlinking] = useState(false);
 
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query.trim());
+      setSkip(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [query]);
+
   const fetchUsers = useCallback(
-    async (currentSkip: number, signal: AbortSignal) => {
+    async (currentSkip: number, emailFilter: string, signal: AbortSignal) => {
       const params = new URLSearchParams();
       params.set("skip", String(currentSkip));
       params.set("limit", String(PAGE_SIZE));
+      if (emailFilter) {
+        params.set("email", emailFilter);
+      }
 
       const res = await fetch(`/api/upstream/users?${params.toString()}`, {
         method: "GET",
@@ -88,7 +101,7 @@ export default function UsersClient() {
 
     (async () => {
       try {
-        const data = await fetchUsers(skip, controller.signal);
+        const data = await fetchUsers(skip, debouncedQuery, controller.signal);
         setUsers(Array.isArray(data?.users) ? data.users : []);
         setTotal(typeof data?.total === "number" ? data.total : 0);
       } catch (err) {
@@ -104,21 +117,11 @@ export default function UsersClient() {
     })();
 
     return () => controller.abort();
-  }, [skip, reloadToken, fetchUsers]);
+  }, [skip, debouncedQuery, reloadToken, fetchUsers]);
 
   function reload() {
     setReloadToken((k) => k + 1);
   }
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter(
-      (u) =>
-        u.email.toLowerCase().includes(q) ||
-        u.accounts?.some((a) => a.email.toLowerCase().includes(q))
-    );
-  }, [users, query]);
 
   const currentPage = Math.floor(skip / PAGE_SIZE) + 1;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -402,13 +405,13 @@ export default function UsersClient() {
                 </tr>
               )}
 
-              {!loading && !errorMsg && filtered.length === 0 && (
+              {!loading && !errorMsg && users.length === 0 && (
                 <tr>
                   <td
                     colSpan={2}
                     className="px-4 py-10 text-center text-sm text-white/60"
                   >
-                    {users.length === 0
+                    {users.length === 0 && !debouncedQuery
                       ? "Todavía no hay usuarios. Crea el primero."
                       : "Ningún usuario coincide con la búsqueda."}
                   </td>
@@ -416,7 +419,7 @@ export default function UsersClient() {
               )}
 
               {!errorMsg &&
-                filtered.map((user) => (
+                users.map((user) => (
                   <tr
                     key={user.id}
                     className="transition hover:bg-secondary_blue/5"
