@@ -55,13 +55,12 @@ export default function AccountsClient() {
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [userQuery, setUserQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [accountQuery, setAccountQuery] = useState("");
-  const [linkAccounts, setLinkAccounts] = useState<Account[]>([]);
-  const [loadingLinkAccounts, setLoadingLinkAccounts] = useState(false);
+  const [accountEmailsText, setAccountEmailsText] = useState("");
   const [selectedAccounts, setSelectedAccounts] = useState<Account[]>([]);
+  const [notFoundEmails, setNotFoundEmails] = useState<string[]>([]);
+  const [resolvingAccounts, setResolvingAccounts] = useState(false);
   const [linking, setLinking] = useState(false);
   const userSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const accountSearchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -186,9 +185,9 @@ export default function AccountsClient() {
     setUserQuery("");
     setSelectedUser(null);
     setUsers([]);
-    setAccountQuery("");
-    setLinkAccounts([]);
+    setAccountEmailsText("");
     setSelectedAccounts([]);
+    setNotFoundEmails([]);
     setLinkOpen(true);
   }
 
@@ -221,39 +220,65 @@ export default function AccountsClient() {
     }, 300);
   }
 
-  function handleAccountQueryChange(value: string) {
-    setAccountQuery(value);
-    setLinkAccounts([]);
+  async function resolveAccountEmails() {
+    const raw = accountEmailsText.trim();
+    if (!raw) return;
 
-    if (accountSearchRef.current) clearTimeout(accountSearchRef.current);
+    const emails = raw
+      .split(/[\n,;]+/)
+      .map((e) => e.trim().toLowerCase())
+      .filter((e) => e.length > 0);
 
-    const trimmed = value.trim();
-    if (!trimmed) return;
+    const unique = [...new Set(emails)];
+    if (unique.length === 0) return;
 
-    accountSearchRef.current = setTimeout(async () => {
-      setLoadingLinkAccounts(true);
-      try {
-        const params = new URLSearchParams({ email: trimmed, limit: "10" });
-        const res = await fetch(`/api/upstream/accounts?${params.toString()}`, {
-          cache: "no-store",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setLinkAccounts(Array.isArray(data?.accounts) ? data.accounts : []);
-        }
-      } catch {
-        /* silent */
-      } finally {
-        setLoadingLinkAccounts(false);
+    setResolvingAccounts(true);
+    setNotFoundEmails([]);
+
+    const found: Account[] = [];
+    const notFound: string[] = [];
+
+    const batchSize = 5;
+    for (let i = 0; i < unique.length; i += batchSize) {
+      const batch = unique.slice(i, i + batchSize);
+      const results = await Promise.all(
+        batch.map(async (email) => {
+          try {
+            const params = new URLSearchParams({ email, limit: "1" });
+            const res = await fetch(`/api/upstream/accounts?${params.toString()}`, {
+              cache: "no-store",
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const accounts: Account[] = Array.isArray(data?.accounts) ? data.accounts : [];
+              const exact = accounts.find((a) => a.email.toLowerCase() === email);
+              if (exact) return { email, account: exact };
+            }
+          } catch {
+            /* silent */
+          }
+          return { email, account: null };
+        })
+      );
+      for (const r of results) {
+        if (r.account) found.push(r.account);
+        else notFound.push(r.email);
       }
-    }, 300);
+    }
+
+    setSelectedAccounts((prev) => {
+      const existingIds = new Set(prev.map((a) => a.id));
+      const newAccounts = found.filter((a) => !existingIds.has(a.id));
+      return [...prev, ...newAccounts];
+    });
+    setNotFoundEmails(notFound);
+    if (found.length > 0) {
+      setAccountEmailsText("");
+    }
+    setResolvingAccounts(false);
   }
 
   const filteredUsers = selectedUser || !userQuery.trim() ? [] : users;
-
-  const filteredLinkAccounts = !accountQuery.trim()
-    ? []
-    : linkAccounts.filter((a) => !selectedAccounts.some((s) => s.id === a.id));
 
   function selectUser(user: User) {
     setSelectedUser(user);
@@ -263,11 +288,6 @@ export default function AccountsClient() {
   function clearUser() {
     setSelectedUser(null);
     setUserQuery("");
-  }
-
-  function addAccount(account: Account) {
-    setSelectedAccounts((prev) => [...prev, account]);
-    setAccountQuery("");
   }
 
   function removeAccount(id: string) {
@@ -618,46 +638,34 @@ export default function AccountsClient() {
               )}
             </div>
 
-            <div className="relative">
+            <div>
               <span className="mb-1 block text-xs font-medium text-secondary_blue">
-                Correo de la cuenta
+                Correos de las cuentas
               </span>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={accountQuery}
-                  onChange={(e) => handleAccountQueryChange(e.target.value)}
-                  placeholder="Escribe el correo de la cuenta"
-                  className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue px-3 py-2 pr-8 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
-                />
-                {loadingLinkAccounts && (
-                  <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center">
-                    <svg className="h-4 w-4 animate-spin text-secondary_blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
-                    </svg>
+              <textarea
+                value={accountEmailsText}
+                onChange={(e) => setAccountEmailsText(e.target.value)}
+                placeholder={"Pega los correos de las cuentas separados por comas o saltos de línea\nej: cuenta1@correo.com, cuenta2@correo.com"}
+                rows={4}
+                className="w-full resize-none rounded-lg border border-secondary_blue/30 bg-principal_blue px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+              />
+              <button
+                type="button"
+                onClick={resolveAccountEmails}
+                disabled={resolvingAccounts || !accountEmailsText.trim()}
+                className="mt-2 w-full rounded-lg border border-secondary_blue/30 bg-secondary_blue/10 px-3 py-2 text-sm font-medium text-secondary_blue transition hover:bg-secondary_blue/20 disabled:opacity-50"
+              >
+                {resolvingAccounts ? "Buscando cuentas…" : "Buscar cuentas"}
+              </button>
+              {notFoundEmails.length > 0 && (
+                <div className="mt-2 rounded-lg border border-red-500/30 bg-red-500/10 p-2">
+                  <span className="block text-xs font-medium text-red-400">
+                    No se encontraron ({notFoundEmails.length}):
                   </span>
-                )}
-              </div>
-              {filteredLinkAccounts.length > 0 && (
-                <div className="absolute z-10 mt-1 max-h-36 w-full overflow-y-auto rounded-lg border border-secondary_blue/20 bg-principal_blue shadow-lg">
-                  {filteredLinkAccounts.map((acc) => (
-                    <button
-                      key={acc.id}
-                      type="button"
-                      onClick={() => addAccount(acc)}
-                      className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-white hover:bg-secondary_blue/10"
-                    >
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary_blue/15 text-xs font-semibold uppercase text-secondary_blue">
-                        {acc.email[0]}
-                      </div>
-                      {acc.email}
-                    </button>
-                  ))}
+                  <p className="mt-1 text-xs text-red-300/80 break-all">
+                    {notFoundEmails.join(", ")}
+                  </p>
                 </div>
-              )}
-              {accountQuery.trim() && filteredLinkAccounts.length === 0 && !loadingLinkAccounts && (
-                <p className="mt-1 text-xs text-white/40">No se encontró ninguna cuenta con ese correo.</p>
               )}
             </div>
 
