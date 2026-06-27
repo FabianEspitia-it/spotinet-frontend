@@ -59,7 +59,10 @@ export default function UsersClient() {
   const [selectedUnlinkIds, setSelectedUnlinkIds] = useState<string[]>([]);
   const [unlinking, setUnlinking] = useState(false);
 
+  const [accountEmailQuery, setAccountEmailQuery] = useState("");
+
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [debouncedAccountEmail, setDebouncedAccountEmail] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -69,13 +72,24 @@ export default function UsersClient() {
     return () => clearTimeout(timer);
   }, [query]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAccountEmail(accountEmailQuery.trim());
+      setSkip(0);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [accountEmailQuery]);
+
   const fetchUsers = useCallback(
-    async (currentSkip: number, emailFilter: string, signal: AbortSignal) => {
+    async (currentSkip: number, emailFilter: string, accountEmail: string, signal: AbortSignal) => {
       const params = new URLSearchParams();
       params.set("skip", String(currentSkip));
       params.set("limit", String(PAGE_SIZE));
       if (emailFilter) {
         params.set("email", emailFilter);
+      }
+      if (accountEmail) {
+        params.set("account_email", accountEmail);
       }
 
       const res = await fetch(`/api/upstream/users?${params.toString()}`, {
@@ -101,7 +115,7 @@ export default function UsersClient() {
 
     (async () => {
       try {
-        const data = await fetchUsers(skip, debouncedQuery, controller.signal);
+        const data = await fetchUsers(skip, debouncedQuery, debouncedAccountEmail, controller.signal);
         setUsers(Array.isArray(data?.users) ? data.users : []);
         setTotal(typeof data?.total === "number" ? data.total : 0);
       } catch (err) {
@@ -117,7 +131,7 @@ export default function UsersClient() {
     })();
 
     return () => controller.abort();
-  }, [skip, debouncedQuery, reloadToken, fetchUsers]);
+  }, [skip, debouncedQuery, debouncedAccountEmail, reloadToken, fetchUsers]);
 
   function reload() {
     setReloadToken((k) => k + 1);
@@ -296,30 +310,57 @@ export default function UsersClient() {
 
       <div className="overflow-hidden rounded-2xl border border-secondary_blue/20 bg-principal_blue">
         <div className="flex flex-col gap-3 border-b border-secondary_blue/20 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-xs">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-secondary_blue/70">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.8}
-                stroke="currentColor"
-                className="h-4 w-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                />
-              </svg>
-            </span>
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar por correo"
-              className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
-            />
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:max-w-lg">
+            <div className="relative w-full sm:max-w-xs">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-secondary_blue/70">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.8}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                  />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar por correo de usuario"
+                className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+              />
+            </div>
+            <div className="relative w-full sm:max-w-xs">
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-secondary_blue/70">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.8}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                  />
+                </svg>
+              </span>
+              <input
+                type="search"
+                value={accountEmailQuery}
+                onChange={(e) => setAccountEmailQuery(e.target.value)}
+                placeholder="Buscar por cuenta vinculada"
+                className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+              />
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <span className="text-xs text-white/60">
@@ -411,7 +452,7 @@ export default function UsersClient() {
                     colSpan={2}
                     className="px-4 py-10 text-center text-sm text-white/60"
                   >
-                    {users.length === 0 && !debouncedQuery
+                    {users.length === 0 && !debouncedQuery && !debouncedAccountEmail
                       ? "Todavía no hay usuarios. Crea el primero."
                       : "Ningún usuario coincide con la búsqueda."}
                   </td>
