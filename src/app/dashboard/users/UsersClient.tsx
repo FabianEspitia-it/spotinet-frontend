@@ -218,12 +218,26 @@ export default function UsersClient() {
 
   const filteredUnlinkAccounts = useMemo(() => {
     if (!unlinkTarget?.accounts) return [];
-    const q = unlinkQuery.trim().toLowerCase();
-    if (!q) return unlinkTarget.accounts;
+    const raw = unlinkQuery.trim().toLowerCase();
+    if (!raw) return unlinkTarget.accounts;
+    const terms = raw
+      .split(/[\n,;]+/)
+      .map((t) => t.trim())
+      .filter(Boolean);
+    if (terms.length === 0) return unlinkTarget.accounts;
     return unlinkTarget.accounts.filter((a) =>
-      a.email.toLowerCase().includes(q)
+      terms.some((t) => a.email.toLowerCase().includes(t))
     );
   }, [unlinkTarget, unlinkQuery]);
+
+  function selectAllUnlink() {
+    const ids = filteredUnlinkAccounts.map((a) => a.id);
+    setSelectedUnlinkIds((prev) => {
+      const allSelected = ids.every((id) => prev.includes(id));
+      if (allSelected) return prev.filter((id) => !ids.includes(id));
+      return [...new Set([...prev, ...ids])];
+    });
+  }
 
   function toggleUnlink(id: string) {
     setSelectedUnlinkIds((prev) =>
@@ -666,29 +680,33 @@ export default function UsersClient() {
                 Cuentas vinculadas
               </span>
               <div className="relative mb-2">
-                <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-secondary_blue/60">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.8}
-                    stroke="currentColor"
-                    className="h-4 w-4"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
-                    />
-                  </svg>
-                </span>
-                <input
-                  type="search"
+                <textarea
                   value={unlinkQuery}
                   onChange={(e) => setUnlinkQuery(e.target.value)}
-                  placeholder="Buscar cuentas..."
-                  className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue py-2 pl-9 pr-3 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+                  placeholder="Pegar cuentas (una por línea, separadas por coma o punto y coma)..."
+                  rows={3}
+                  className="w-full resize-none rounded-lg border border-secondary_blue/30 bg-principal_blue px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
                 />
+              </div>
+
+              <div className="mb-2 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={selectAllUnlink}
+                  className="rounded-md border border-secondary_blue/30 px-3 py-1 text-xs font-medium text-secondary_blue transition hover:bg-secondary_blue/10"
+                >
+                  {filteredUnlinkAccounts.length > 0 &&
+                  filteredUnlinkAccounts.every((a) =>
+                    selectedUnlinkIds.includes(a.id)
+                  )
+                    ? "Deseleccionar todas"
+                    : "Seleccionar todas"}
+                </button>
+                {selectedUnlinkIds.length > 0 && (
+                  <span className="text-xs text-white/50">
+                    {selectedUnlinkIds.length} cuenta(s) seleccionada(s)
+                  </span>
+                )}
               </div>
 
               {filteredUnlinkAccounts.length === 0 ? (
@@ -714,11 +732,6 @@ export default function UsersClient() {
                 </div>
               )}
 
-              {selectedUnlinkIds.length > 0 && (
-                <p className="mt-1 text-xs text-white/50">
-                  {selectedUnlinkIds.length} cuenta(s) seleccionada(s)
-                </p>
-              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-2">

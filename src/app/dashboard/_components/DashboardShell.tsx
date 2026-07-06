@@ -188,12 +188,12 @@ function SidebarContent({
 }) {
   return (
     <>
-      <div className="flex h-20 items-center justify-center border-b border-secondary_blue/20 px-4">
+      <div className="flex h-16 items-center justify-center border-b border-secondary_blue/20 px-4">
         <Link href="/dashboard" onClick={onNavigate}>
           <Image
             src="/images/final_logo.svg"
             alt="Spotinet"
-            width={140}
+            width={120}
             height={48}
             priority
           />
