@@ -21,13 +21,6 @@ export default function Hero() {
       img: "/images/Net.svg",
       imgHover: "/images/Net2.svg",
     },
-
-    {
-      label: "Código para cerrar dispositivos",
-      href: "/netflix_verification_code",
-      img: "/images/Net.svg",
-      imgHover: "/images/Net2.svg",
-    },
     {
       label: "Código de inicio de sesión",
       href: "/session_code",
