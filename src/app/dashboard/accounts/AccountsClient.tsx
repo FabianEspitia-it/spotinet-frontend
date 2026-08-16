@@ -50,6 +50,13 @@ export default function AccountsClient() {
   const [bulkText, setBulkText] = useState("");
   const [bulkUploading, setBulkUploading] = useState(false);
 
+  const [editTarget, setEditTarget] = useState<Account | null>(null);
+  const [editEmail, setEditEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const [confirmDelete, setConfirmDelete] = useState<Account | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const [linkOpen, setLinkOpen] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
@@ -178,6 +185,76 @@ export default function AccountsClient() {
       toast.error("Error de conexión");
     } finally {
       setBulkUploading(false);
+    }
+  }
+
+  function openEdit(account: Account) {
+    setEditTarget(account);
+    setEditEmail(account.email);
+  }
+
+  async function handleEdit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editTarget) return;
+
+    const email = editEmail.trim().toLowerCase();
+    if (!email) {
+      toast.error("Ingresa un correo válido");
+      return;
+    }
+    if (email === editTarget.email.toLowerCase()) {
+      setEditTarget(null);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch(
+        `/api/upstream/accounts/${encodeURIComponent(editTarget.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
+      if (!res.ok) {
+        toast.error(await readError(res));
+        return;
+      }
+      const updated = (await res.json()) as Account;
+      toast.success("Cuenta actualizada");
+      setAccounts((prev) =>
+        prev.map((a) =>
+          a.id === editTarget.id ? { ...a, email: updated?.email ?? email } : a
+        )
+      );
+      setEditTarget(null);
+    } catch {
+      toast.error("Error de conexión");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(account: Account) {
+    setDeletingId(account.id);
+    try {
+      const res = await fetch(
+        `/api/upstream/accounts/${encodeURIComponent(account.id)}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) {
+        toast.error(await readError(res));
+        return;
+      }
+      toast.success("Cuenta eliminada");
+      setConfirmDelete(null);
+      setAccounts((prev) => prev.filter((a) => a.id !== account.id));
+      setTotal((prev) => Math.max(0, prev - 1));
+    } catch {
+      toast.error("Error de conexión");
+    } finally {
+      setDeletingId(null);
     }
   }
 
@@ -473,6 +550,7 @@ export default function AccountsClient() {
             <thead className="bg-secondary_blue/5 text-xs uppercase tracking-wide text-secondary_blue/80">
               <tr>
                 <th className="px-4 py-3 font-semibold">Correo</th>
+                <th className="px-4 py-3 text-right font-semibold">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-secondary_blue/10">
@@ -522,6 +600,52 @@ export default function AccountsClient() {
                         </span>
                       </div>
                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => openEdit(account)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-secondary_blue/30 px-3 py-1.5 text-xs font-medium text-secondary_blue transition hover:bg-secondary_blue/10"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.8}
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125"
+                            />
+                          </svg>
+                          Editar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setConfirmDelete(account)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-400/30 px-3 py-1.5 text-xs font-medium text-red-300 transition hover:bg-red-500/10"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.8}
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                            />
+                          </svg>
+                          Eliminar
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
             </tbody>
@@ -569,6 +693,83 @@ export default function AccountsClient() {
               </button>
             </div>
           </form>
+        </Modal>
+      )}
+
+      {/* Modal: Editar cuenta */}
+      {editTarget && (
+        <Modal
+          onClose={() => (!saving ? setEditTarget(null) : undefined)}
+          title="Editar cuenta"
+        >
+          <form onSubmit={handleEdit} className="space-y-4">
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-secondary_blue">
+                Correo
+              </span>
+              <input
+                type="email"
+                required
+                autoFocus
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                placeholder="cuenta@correo.com"
+                className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+              />
+            </label>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setEditTarget(null)}
+                disabled={saving}
+                className="rounded-lg border border-secondary_blue/30 px-4 py-2 text-sm font-medium text-white/80 hover:bg-secondary_blue/10 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={saving}
+                className="rounded-lg bg-secondary_blue px-4 py-2 text-sm font-semibold text-principal_blue transition hover:opacity-90 disabled:opacity-60"
+              >
+                {saving ? "Guardando…" : "Guardar cambios"}
+              </button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Modal: Eliminar cuenta */}
+      {confirmDelete && (
+        <Modal
+          onClose={() => (!deletingId ? setConfirmDelete(null) : undefined)}
+          title="Eliminar cuenta"
+        >
+          <p className="text-sm text-white/80">
+            ¿Seguro que deseas eliminar la cuenta{" "}
+            <span className="font-semibold text-white">
+              {confirmDelete.email}
+            </span>
+            ? Esta acción no se puede deshacer.
+          </p>
+          <div className="mt-6 flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(null)}
+              disabled={deletingId !== null}
+              className="rounded-lg border border-secondary_blue/30 px-4 py-2 text-sm font-medium text-white/80 hover:bg-secondary_blue/10 disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleDelete(confirmDelete)}
+              disabled={deletingId !== null}
+              className="rounded-lg bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600 disabled:opacity-60"
+            >
+              {deletingId !== null ? "Eliminando…" : "Sí, eliminar"}
+            </button>
+          </div>
         </Modal>
       )}
 
