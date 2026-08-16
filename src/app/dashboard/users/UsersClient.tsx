@@ -21,7 +21,7 @@ type ListResponse = {
   users?: User[];
 };
 
-const PAGE_SIZE = 25;
+const PAGE_SIZE = 20;
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -53,6 +53,12 @@ export default function UsersClient() {
 
   const [confirmDelete, setConfirmDelete] = useState<User | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const [passwordTarget, setPasswordTarget] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
 
   const [unlinkTarget, setUnlinkTarget] = useState<User | null>(null);
   const [unlinkQuery, setUnlinkQuery] = useState("");
@@ -207,6 +213,49 @@ export default function UsersClient() {
       toast.error("Error de conexión");
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  function openPassword(user: User) {
+    setPasswordTarget(user);
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowPassword(false);
+  }
+
+  async function handleUpdatePassword(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!passwordTarget) return;
+
+    if (newPassword.length < 6) {
+      toast.error("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+
+    setSavingPassword(true);
+    try {
+      const res = await fetch(
+        `/api/upstream/users/${encodeURIComponent(passwordTarget.id)}/password`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ password: newPassword }),
+        }
+      );
+      if (!res.ok) {
+        toast.error(await readError(res));
+        return;
+      }
+      toast.success("Contraseña actualizada");
+      setPasswordTarget(null);
+    } catch {
+      toast.error("Error de conexión");
+    } finally {
+      setSavingPassword(false);
     }
   }
 
@@ -437,7 +486,7 @@ export default function UsersClient() {
             <thead className="bg-secondary_blue/5 text-xs uppercase tracking-wide text-secondary_blue/80">
               <tr>
                 <th className="px-4 py-3 font-semibold">Usuario / Cuentas vinculadas</th>
-                <th className="w-56 px-4 py-3 text-right font-semibold">
+                <th className="w-72 px-4 py-3 text-right font-semibold">
                   Acciones
                 </th>
               </tr>
@@ -516,7 +565,7 @@ export default function UsersClient() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex items-center justify-end gap-2">
+                      <div className="flex flex-wrap items-center justify-end gap-2">
                         {user.accounts && user.accounts.length > 0 && (
                           <button
                             type="button"
@@ -540,6 +589,27 @@ export default function UsersClient() {
                             Desvincular cuentas
                           </button>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => openPassword(user)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-secondary_blue/30 px-3 py-1.5 text-xs font-medium text-secondary_blue transition hover:bg-secondary_blue/10"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.8}
+                            stroke="currentColor"
+                            className="h-4 w-4"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z"
+                            />
+                          </svg>
+                          Cambiar contraseña
+                        </button>
                         <button
                           type="button"
                           onClick={() => setConfirmDelete(user)}
@@ -658,6 +728,87 @@ export default function UsersClient() {
               {deletingId !== null ? "Eliminando…" : "Sí, eliminar"}
             </button>
           </div>
+        </Modal>
+      )}
+
+      {/* Modal: Cambiar contraseña */}
+      {passwordTarget && (
+        <Modal
+          onClose={() => (!savingPassword ? setPasswordTarget(null) : undefined)}
+          title="Asignar nueva contraseña"
+        >
+          <form onSubmit={handleUpdatePassword} className="space-y-4">
+            <p className="text-sm text-white/70">
+              Usuario:{" "}
+              <span className="font-semibold text-white">
+                {passwordTarget.email}
+              </span>
+            </p>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-secondary_blue">
+                Nueva contraseña
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                autoFocus
+                minLength={6}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+              />
+            </label>
+
+            <label className="block">
+              <span className="mb-1 block text-xs font-medium text-secondary_blue">
+                Confirmar contraseña
+              </span>
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full rounded-lg border border-secondary_blue/30 bg-principal_blue px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-secondary_blue focus:outline-none focus:ring-1 focus:ring-secondary_blue"
+              />
+            </label>
+
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-white/70">
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+                className="h-4 w-4 rounded border-secondary_blue/30 bg-principal_blue accent-secondary_blue"
+              />
+              Mostrar contraseñas
+            </label>
+
+            <p className="text-xs text-white/50">
+              Al cambiar la contraseña se cerrarán las sesiones activas del
+              usuario.
+            </p>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPasswordTarget(null)}
+                disabled={savingPassword}
+                className="rounded-lg border border-secondary_blue/30 px-4 py-2 text-sm font-medium text-white/80 hover:bg-secondary_blue/10 disabled:opacity-60"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={savingPassword}
+                className="rounded-lg bg-secondary_blue px-4 py-2 text-sm font-semibold text-principal_blue transition hover:opacity-90 disabled:opacity-60"
+              >
+                {savingPassword ? "Guardando…" : "Guardar contraseña"}
+              </button>
+            </div>
+          </form>
         </Modal>
       )}
 

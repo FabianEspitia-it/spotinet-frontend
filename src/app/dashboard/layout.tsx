@@ -38,7 +38,7 @@ async function ensureAdmin() {
 
   let res: Response;
   try {
-    res = await fetchBackendApi("/users", {
+    res = await fetchBackendApi("/users?limit=1", {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
   } catch {
