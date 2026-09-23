@@ -95,6 +95,12 @@ export function requestHboSessionCode(
   return postJson<CodeResponse>("hbo/code/", { email });
 }
 
+export function requestSpotifySessionCode(
+  email: string
+): Promise<StreamingResult<CodeResponse>> {
+  return postJson<CodeResponse>("spotify/session_code/", { email });
+}
+
 export function requestDisneySessionCode(
   email: string
 ): Promise<StreamingResult<CodeResponse>> {

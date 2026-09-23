@@ -99,6 +99,9 @@ function serviceBadgeClasses(service: string): string {
   if (normalized.includes("hbo") || normalized.includes("max")) {
     return "bg-purple-500/15 text-purple-300 ring-purple-400/30";
   }
+  if (normalized.includes("spotify")) {
+    return "bg-emerald-500/15 text-emerald-300 ring-emerald-400/30";
+  }
   return "bg-secondary_blue/15 text-secondary_blue ring-secondary_blue/30";
 }
 

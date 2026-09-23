@@ -46,6 +46,13 @@ export default function Hero() {
       img: "/images/Hbo.svg",
       imgHover: "/images/Hbo.svg",
     },
+
+    {
+      label: "Código de inicio de sesión",
+      href: "/spotify_session_code",
+      img: "/images/Spotify.svg",
+      imgHover: "/images/Spotify2.svg",
+    },
   ];
 
   return (
@@ -57,7 +64,7 @@ export default function Hero() {
       </div>
 
       <section className="relative flex w-full items-center pb-20 pt-10">
-        <div className="mx-auto pt-10 text-center">
+        <div className="mx-auto w-full pt-10 text-center">
           <Image
             src="/images/final_logo.svg"
             alt="Spotinet Logo"
@@ -70,20 +77,13 @@ export default function Hero() {
             Por favor selecciona el servicio que deseas utilizar:
           </p>
 
-          <section className="flex flex-col items-center md:flex-row mt-3">
+          <section className="mx-auto mt-3 grid w-full max-w-[1408px] grid-cols-1 gap-[2px] overflow-hidden rounded-xl border-2 border-secondary_blue bg-secondary_blue shadow-md sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
             {links.map((link, index) => (
               <a
                 key={index}
                 href={link.href}
-                className={`group text-secondary_blue w-44 h-44 border-2 border-secondary_blue flex flex-col items-center justify-center 
-        bg-principal_blue shadow-md hover:bg-secondary_blue hover:text-principal_blue duration-200 transition-all 
-        ${
-          index === 0
-            ? "md:rounded-l-xl md:rounded-r-none rounded-t-xl"
-            : index === links.length - 1
-              ? "md:rounded-r-xl md:rounded-l-none  rounded-b-xl"
-              : ""
-        }`}
+                className="group text-secondary_blue w-full h-44 flex flex-col items-center justify-center 
+        bg-principal_blue hover:bg-secondary_blue hover:text-principal_blue duration-200 transition-all"
                 aria-label={link.label}
               >
                 <div className="relative">
@@ -98,7 +98,9 @@ export default function Hero() {
                           ? 100
                           : link.img.includes("Prime")
                             ? 70
-                            : 70
+                            : link.img.includes("Spotify")
+                              ? 44
+                              : 70
                     }
                     height={10}
                     className="group-hover:opacity-0 transition-opacity duration-300"
@@ -115,7 +117,9 @@ export default function Hero() {
                           ? 100
                           : link.img.includes("Prime")
                             ? 70
-                            : 50
+                            : link.img.includes("Spotify")
+                              ? 44
+                              : 50
                     }
                     height={10}
                     className="absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"

@@ -17,7 +17,7 @@ export default function Home() {
           className="z-0"
         />
 
-        <main className="relative z-10 flex flex-col justify-center items-center flex-1 px-8 max-w-screen-xl mx-auto">
+        <main className="relative z-10 flex w-full flex-col justify-center items-center flex-1 px-8 max-w-screen-2xl mx-auto">
           <Hero />
         </main>
       </Fade>
