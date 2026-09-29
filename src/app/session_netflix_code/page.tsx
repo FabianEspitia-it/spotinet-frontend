@@ -14,6 +14,8 @@ export default function SessionNetflixCode() {
   const [loading, setLoading] = useState(false);
   const [responseMessage, setResponseMessage] = useState("");
 
+  const isLink = responseMessage.startsWith("http");
+
   async function sendData(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -162,10 +164,29 @@ export default function SessionNetflixCode() {
                   <p className="text-secondary_blue">Inicio</p>
                 </Link>
               </div>
-              <div className="mb-5">
-                <p className="text-white">Código de sesión: </p>
-                <p className="text-secondary_blue text-xl">{responseMessage}</p>
-              </div>
+              {isLink ? (
+                <div className="mb-5">
+                  <p className="text-white text-md mb-4">
+                    Haz click en el enlace para aprobar el inicio de sesión:{" "}
+                    <br />
+                  </p>
+                  <a
+                    className="w-full text-secondary_blue text-xl underline border-2 py-2 rounded-lg border-secondary_blue hover:bg-secondary_blue hover:text-principal_blue duration-300 block"
+                    rel="noreferrer"
+                    target="_blank"
+                    href={responseMessage}
+                  >
+                    SPOTILINK
+                  </a>
+                </div>
+              ) : (
+                <div className="mb-5">
+                  <p className="text-white">Código de sesión: </p>
+                  <p className="text-secondary_blue text-xl">
+                    {responseMessage}
+                  </p>
+                </div>
+              )}
 
               <a
                 className="bg-secondary_blue text-white rounded-xl px-6 py-2 font-semibold hover:bg-secondary_blue-dark focus:outline-none focus:ring-4 focus:ring-secondary_blue focus:ring-opacity-50 transition duration-300 w-full"
